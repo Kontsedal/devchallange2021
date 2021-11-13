@@ -1,10 +1,17 @@
+export type Adsr = {
+  attackTime: number;
+  decayTime: number;
+  sustainLevel: number;
+  releaseTime: number;
+  sustainTime: number;
+};
 export class Sound {
   private audioContext: AudioContext;
   private oscillator: OscillatorNode;
   private gain: GainNode;
   private startTime: number;
-  private endTime?: number;
   private volume: number;
+  private adsr: Adsr;
 
   constructor({
     audioContext,
@@ -12,14 +19,14 @@ export class Sound {
     waveType,
     volume,
     startTime,
-    endTime,
+    adsr,
   }: {
     audioContext: AudioContext;
     freqValue: number;
     waveType: OscillatorType;
     volume: number;
     startTime: number;
-    endTime: number;
+    adsr: Adsr;
   }) {
     this.audioContext = audioContext;
     this.oscillator = this.audioContext.createOscillator();
@@ -30,20 +37,51 @@ export class Sound {
     this.oscillator.type = waveType;
     this.oscillator.frequency.value = freqValue;
     this.startTime = startTime;
-    this.endTime = endTime;
     this.volume = volume;
+    this.adsr = adsr;
   }
 
   play() {
-    this.gain.gain.setValueAtTime(this.volume, this.startTime);
+    this.gain.gain.setValueAtTime(0.001, this.startTime);
+    this.gain.gain.exponentialRampToValueAtTime(
+      this.volume,
+      this.startTime + this.adsr.attackTime
+    );
+    this.gain.gain.exponentialRampToValueAtTime(
+      this.adsr.sustainLevel * this.volume,
+      this.startTime + this.adsr.attackTime + this.adsr.decayTime
+    );
+    this.gain.gain.setValueAtTime(
+      this.adsr.sustainLevel * this.volume,
+      this.startTime +
+        this.adsr.attackTime +
+        this.adsr.decayTime +
+        this.adsr.sustainTime
+    );
+    this.gain.gain.exponentialRampToValueAtTime(
+      0.001,
+      this.startTime +
+        this.adsr.attackTime +
+        this.adsr.decayTime +
+        this.adsr.sustainTime +
+        this.adsr.releaseTime
+    );
     this.oscillator.start(this.startTime);
-    if (this.endTime) {
-      this.stop(this.endTime);
-    }
+    this.oscillator.stop(
+      this.startTime +
+        this.adsr.attackTime +
+        this.adsr.decayTime +
+        this.adsr.sustainTime +
+        this.adsr.releaseTime +
+        0.1
+    );
   }
 
-  stop(time: number) {
-    this.gain.gain.exponentialRampToValueAtTime(0.001, time);
-    this.oscillator.stop(time + 1);
+  stop() {
+    this.gain.gain.exponentialRampToValueAtTime(
+      0.001,
+      this.audioContext.currentTime
+    );
+    this.oscillator.stop(this.audioContext.currentTime + 1);
   }
 }
