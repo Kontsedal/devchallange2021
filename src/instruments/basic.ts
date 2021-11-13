@@ -1,6 +1,6 @@
-import { InstrumentInitializer } from "./instrument";
+import { Instrument } from "./instrument";
 
-export const initializeBasicInstrument: InstrumentInitializer = (
+export const initializeBasicInstrument: Instrument = (
   _audioContext: AudioContext,
   oscillatorNode: OscillatorNode
 ) => {

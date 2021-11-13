@@ -1,4 +1,4 @@
-export type InstrumentInitializer = (
+export type Instrument = (
   audioContext: AudioContext,
   oscillatorNode: OscillatorNode
 ) => unknown;
