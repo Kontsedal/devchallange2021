@@ -1,3 +1,5 @@
+import { InstrumentInitializer } from "../instruments/instrument";
+
 export type Adsr = {
   attackTime: number;
   decayTime: number;
@@ -5,6 +7,10 @@ export type Adsr = {
   releaseTime: number;
   sustainTime: number;
 };
+
+export const imag = [0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1];
+export const real = imag.map(() => 0);
+
 export class Sound {
   private audioContext: AudioContext;
   private oscillator: OscillatorNode;
@@ -16,25 +22,26 @@ export class Sound {
   constructor({
     audioContext,
     freqValue,
-    waveType,
     volume,
     startTime,
     adsr,
+    instrument,
   }: {
     audioContext: AudioContext;
     freqValue: number;
-    waveType: OscillatorType;
     volume: number;
     startTime: number;
     adsr: Adsr;
+    instrument: InstrumentInitializer;
   }) {
     this.audioContext = audioContext;
     this.oscillator = this.audioContext.createOscillator();
+    instrument(this.audioContext, this.oscillator);
     this.gain = this.audioContext.createGain();
 
     this.oscillator.connect(this.gain);
     this.gain.connect(this.audioContext.destination);
-    this.oscillator.type = waveType;
+
     this.oscillator.frequency.value = freqValue;
     this.startTime = startTime;
     this.volume = volume;
