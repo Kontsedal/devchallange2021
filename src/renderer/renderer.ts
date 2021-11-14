@@ -34,8 +34,7 @@ export type Component<T extends object> = (
   key: string
 ) => string;
 const rootMap = new Map<string | number, any>();
-// @ts-ignore
-window.rootMap = rootMap;
+
 export const render = <T extends object>(
   component: Component<T>,
   {

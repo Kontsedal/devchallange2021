@@ -4,7 +4,6 @@ import { Button } from "./components/Button/Button";
 import { TrackControls } from "./components/TrackControls/TrackControls";
 import { Track } from "../music/Track";
 import { getId } from "../utils/id";
-import { parseSequence } from "../music/parser";
 
 enum PLAY_STATES {
   IDLE = "idle",
@@ -16,30 +15,7 @@ export const App: Component<{}> = (
   { template, child, state, memo, ref }
 ) => {
   const [playState, setPlayState] = state(PLAY_STATES.IDLE);
-  const [tracks, setTracks] = state<{ id: string; instance: Track }[]>([
-    {
-      id: "a",
-      instance: new Track({
-        melody: parseSequence(
-          "E4/4 E4/4 E4/4 D#4/8. A#4/16 E4/4 D#4/8. A#4/16 E4/2\n" +
-            "D5/4 D5/4 D5/4 D#5/8. A#4/16 F#4/4 D#4/8. A#4/16 E4/2"
-        ),
-        bpm: 100,
-      }),
-    },
-    {
-      id: "b",
-      instance: new Track({
-        melody: parseSequence(
-          `D3/8 D3/8 A#3/8. A3/16 G3/8 G3/4.
-A#3/8 A#3/8 C4/8 A#3/8 A3/4. A3/8
-A3/8 A3/8 A3/8 A3/8 D4/8 C4/8 A#3/8 A3/8
-A#3/4 A#3/8. A#3/16 D4/8 A#3/8`
-        ),
-        bpm: 60,
-      }),
-    },
-  ]);
+  const [tracks, setTracks] = state<{ id: string; instance: Track }[]>([]);
   const audioContext = ref<AudioContext | undefined>(undefined);
   const handlePlay = memo(
     () => () => {

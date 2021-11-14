@@ -54,16 +54,18 @@ export class Track {
         duration *= 1.5;
       }
       duration = duration / this.params.bpm;
-      let sound = new Sound({
-        audioContext: audioContext,
-        freqValue: soundDataItem.frequency,
-        volume: 0.6,
-        startTime: lastEnd,
-        instrument: initializeOrganInstrument,
-        adsr: new Adsr(this.params.adsr),
-      });
+      if (soundDataItem.frequency) {
+        let sound = new Sound({
+          audioContext: audioContext,
+          freqValue: soundDataItem.frequency,
+          volume: 0.6,
+          startTime: lastEnd,
+          instrument: initializeOrganInstrument,
+          adsr: new Adsr(this.params.adsr),
+        });
+        sound.play();
+      }
       lastEnd = lastEnd + duration;
-      sound.play();
     }
   }
 
