@@ -11,7 +11,7 @@ const CACHE_KEYS = {
   PREV_DEPENDENCIES: "prevDependencies",
   CLEANUP_FUNCTION: "cleanup_function",
 };
-type Utils = {
+export type ComponentUtils = {
   template: (
     input: TemplateStringsArray,
     ...params: ReadonlyArray<any>
@@ -25,15 +25,17 @@ type Utils = {
     value: T
   ) => [state: T, setState: (newValue: (oldValue: T) => T) => void];
   effect: (fn: () => (() => void) | void, dependencies: any[]) => void;
-  event: (
-    eventName: string,
-    selector: string,
-    handler: (event: Event) => unknown
-  ) => unknown;
   memo: <T extends () => any>(fn: T, dependencies: any[]) => ReturnType<T>;
 };
 const KEY_DELIMITER = "->";
-export type Component<T extends object> = (props: T, utils: Utils) => string;
+export type Component<T extends object> = (
+  props: T,
+  utils: ComponentUtils,
+  key: string
+) => string;
+const rootMap = new Map<string | number, any>();
+// @ts-ignore
+window.rootMap = rootMap;
 export const render = <T extends object>(
   component: Component<T>,
   {
@@ -45,7 +47,7 @@ export const render = <T extends object>(
     props: T;
     target?: HTMLElement;
   },
-  cache = new Map<string | number, any>()
+  cache = rootMap
 ) => {
   const componentCache = getSubCache(cache, parentKey);
   let renderedChildrenKeys: string[] = [];
@@ -71,7 +73,6 @@ export const render = <T extends object>(
         return childCache.get(CACHE_KEYS.HTML);
       }
       let html = render(childComponent, { props, key: childKey }, childCache);
-      childCache.set(CACHE_KEYS.HTML, html);
       childCache.set(CACHE_KEYS.DEPENDENCIES, dependencies);
       renderedChildrenKeys.push(childKey);
       return html;
@@ -104,8 +105,8 @@ export const render = <T extends object>(
       return memoCache.get(CACHE_KEYS.VALUE);
     }
     let result = fn();
-    memoCache.set(CACHE_KEYS.VALUE, fn());
-    memoCache.set(CACHE_KEYS.DEPENDENCIES, dependencies);
+    memoCache.set(CACHE_KEYS.VALUE, result);
+    memoCache.set(CACHE_KEYS.PREV_DEPENDENCIES, dependencies);
     return result;
   };
 
@@ -129,27 +130,29 @@ export const render = <T extends object>(
   let effect = (fn: () => (() => void) | void, dependencies: any[]) => {
     callCount++;
     const id = callCount;
-    const effectsCache = getSubCache(cache, CACHE_KEYS.EFFECTS);
-    const effectCache = getSubCache(effectsCache, id);
-    let prevDependencies = effectCache.get(CACHE_KEYS.PREV_DEPENDENCIES);
-    if (
-      prevDependencies &&
-      dependenciesAreEqual(prevDependencies, dependencies)
-    ) {
-      return;
-    }
-    if (
-      prevDependencies &&
-      !dependenciesAreEqual(prevDependencies, dependencies)
-    ) {
-      let cleanup = effectCache.get(CACHE_KEYS.CLEANUP_FUNCTION);
-      if (typeof cleanup === "function") {
-        cleanup();
+    setTimeout(() => {
+      const effectsCache = getSubCache(cache, CACHE_KEYS.EFFECTS);
+      const effectCache = getSubCache(effectsCache, id);
+      let prevDependencies = effectCache.get(CACHE_KEYS.PREV_DEPENDENCIES);
+      if (
+        prevDependencies &&
+        dependenciesAreEqual(prevDependencies, dependencies)
+      ) {
+        return;
       }
-    }
-    let cleanup = fn();
-    effectCache.set(CACHE_KEYS.CLEANUP_FUNCTION, cleanup);
-    effectCache.set(CACHE_KEYS.PREV_DEPENDENCIES, dependencies);
+      if (
+        prevDependencies &&
+        !dependenciesAreEqual(prevDependencies, dependencies)
+      ) {
+        let cleanup = effectCache.get(CACHE_KEYS.CLEANUP_FUNCTION);
+        if (typeof cleanup === "function") {
+          cleanup();
+        }
+      }
+      let cleanup = fn();
+      effectCache.set(CACHE_KEYS.CLEANUP_FUNCTION, cleanup);
+      effectCache.set(CACHE_KEYS.PREV_DEPENDENCIES, dependencies);
+    }, 0);
   };
   let template = (
     input: TemplateStringsArray,
@@ -172,38 +175,8 @@ export const render = <T extends object>(
     }, "");
   };
 
-  let event = (
-    eventName: string,
-    selector: string,
-    handler: (event: Event) => unknown
-  ) => {
-    callCount++;
-    const id = callCount;
-    setTimeout(() => {
-      const eventsCache = getSubCache(cache, CACHE_KEYS.EVENTS);
-      if (eventsCache.has(id)) {
-        return;
-      }
-      const delegatedHandler = (event: Event) => {
-        if (!event) {
-          return;
-        }
-        let expectedTarget = (event?.target as HTMLDivElement)?.closest(
-          selector
-        );
-        if (expectedTarget) {
-          handler(event);
-        }
-      };
-      document.body.addEventListener(eventName, delegatedHandler);
-      eventsCache.set(id, () =>
-        document.body.removeEventListener(eventName, delegatedHandler)
-      );
-    }, 0);
-  };
-
-  function getUtils(): Utils {
-    return { template, child, ref, state, effect, event, memo };
+  function getUtils(): ComponentUtils {
+    return { template, child, ref, state, effect, memo };
   }
 
   function getRootElement() {
@@ -212,10 +185,12 @@ export const render = <T extends object>(
 
   function performRender(isRerender: boolean) {
     let componentRef = getRootElement();
-    const result = component(props, getUtils()).replace(
+
+    const result = component(props, getUtils(), parentKey).replace(
       /^(<\w+)/,
       `$1 data-key="${parentKey}"`
     );
+    cache.set(CACHE_KEYS.HTML, result);
     callCount = 0;
     if (target && !isRerender) {
       target.outerHTML = result;

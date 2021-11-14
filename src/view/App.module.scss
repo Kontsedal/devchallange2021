@@ -7,13 +7,17 @@
 }
 
 .container {
-  padding-top: 20px;
   width: 100%;
   max-width: 700px;
   display: flex;
   flex-direction: column;
+  padding: 10px;
 }
 
 .tracks {
   width: 100%;
+}
+
+.controls {
+  margin-bottom: 20px;
 }

@@ -1,2 +1,6 @@
 .input {
+  padding: 5px;
+  &.hasError {
+    border: 1px solid tomato;
+  }
 }

@@ -25,7 +25,6 @@ export class Track {
     instrument: INSTRUMENT;
     adsr: AdsrParams;
   };
-  private audioContext: AudioContext | undefined;
 
   constructor(params: TrackParams) {
     const {
@@ -43,13 +42,12 @@ export class Track {
     this.params = { bpm, melody, instrument, adsr };
   }
 
-  setMelody(melody: SoundData[]) {
-    this.params.melody = melody;
-  }
-
-  play() {
-    this.audioContext = new AudioContext();
-    let lastEnd = this.audioContext.currentTime;
+  play(audioContext: AudioContext) {
+    if (!audioContext || !this.params.melody.length) {
+      return;
+    }
+    audioContext = new AudioContext();
+    let lastEnd = audioContext.currentTime;
     for (let i = 0; i < this.params.melody.length; i++) {
       let soundDataItem = this.params.melody[i];
       let duration = 240 / soundDataItem.duration.value;
@@ -58,7 +56,7 @@ export class Track {
       }
       duration = duration / this.params.bpm;
       let sound = new Sound({
-        audioContext: this.audioContext,
+        audioContext: audioContext,
         freqValue: soundDataItem.frequency,
         volume: 0.6,
         startTime: lastEnd,
@@ -69,7 +67,11 @@ export class Track {
       sound.play();
     }
   }
-  getAudioContext(): AudioContext | undefined {
-    return this.audioContext;
+
+  setMelody(melody: SoundData[]) {
+    this.params.melody = melody;
+  }
+  getMelody() {
+    return this.params.melody;
   }
 }
