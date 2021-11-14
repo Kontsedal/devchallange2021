@@ -5,6 +5,7 @@ const CACHE_KEYS = {
   REFS: "refs",
   STATES: "states",
   EFFECTS: "effects",
+  EVENTS: "events",
   PREV_DEPENDENCIES: "prevDependencies",
   CLEANUP_FUNCTION: "cleanup_function",
 };
@@ -26,8 +27,13 @@ type Utils = {
     value: T
   ) => [state: T, setState: (newValue: (oldValue: T) => T) => void];
   effect: (fn: () => (() => void) | void, dependencies: any[]) => void;
+  event: (
+    eventName: string,
+    selector: string,
+    handler: (event: Event) => unknown
+  ) => unknown;
 };
-
+const KEY_DELIMITER = "->";
 export type Component = (props: any, utils: Utils) => string;
 export const render = (
   component: Component,
@@ -54,7 +60,7 @@ export const render = (
       }: { props?: any; dependencies: any[]; key: string }
     ) =>
     (): string => {
-      let childKey = parentKey + "->" + key;
+      let childKey = parentKey + KEY_DELIMITER + key;
       let childrenCache = getSubCache(componentCache, CACHE_KEYS.CHILDREN);
       let childCache = getSubCache(childrenCache, childKey);
       let prevDependencies = childCache.get(CACHE_KEYS.DEPENDENCIES);
@@ -136,12 +142,55 @@ export const render = (
     }, "");
   };
 
+  let event = (
+    eventName: string,
+    selector: string,
+    handler: (event: Event) => unknown
+  ) => {
+    callCount++;
+    const id = callCount;
+    setTimeout(() => {
+      const eventsCache = getSubCache(cache, CACHE_KEYS.EVENTS);
+      if (eventsCache.has(id)) {
+        return;
+      }
+      const delegatedHandler = (event: Event) => {
+        if (!event) {
+          return;
+        }
+        let expectedTarget = (event?.target as HTMLDivElement)?.closest(
+          selector
+        );
+        if (expectedTarget) {
+          handler(event);
+        }
+      };
+      let rootElement = getParentElement();
+      rootElement.addEventListener(eventName, delegatedHandler);
+      eventsCache.set(id, () =>
+        rootElement.removeEventListener(eventName, delegatedHandler)
+      );
+    }, 0);
+  };
+
   function getUtils(): Utils {
-    return { template, child, ref, state, effect };
+    return { template, child, ref, state, effect, event };
+  }
+
+  function getRootElement() {
+    return document.querySelector(`[data-key="${parentKey}"]`) as HTMLElement;
+  }
+
+  function getParentElement() {
+    let keyArray = parentKey.split(KEY_DELIMITER);
+    keyArray.pop();
+    return document.querySelector(
+      `[data-key="${keyArray.join(KEY_DELIMITER)}"]`
+    ) as HTMLElement;
   }
 
   function performRender(isRerender: boolean) {
-    let componentRef = document.querySelector(`[data-key="${parentKey}"]`);
+    let componentRef = getRootElement();
     const result = component(props, getUtils()).replace(
       /^(<\w+)/,
       `$1 data-key="${parentKey}"`
@@ -164,6 +213,11 @@ export const render = (
               cleanupFn();
             }
           });
+        childCache.get(CACHE_KEYS.EVENTS)?.forEach((cleanup: () => unknown) => {
+          if (typeof cleanup === "function") {
+            cleanup();
+          }
+        });
         childrenCache.delete(key);
       }
     });
