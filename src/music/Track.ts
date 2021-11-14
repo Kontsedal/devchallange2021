@@ -46,7 +46,6 @@ export class Track {
     if (!audioContext || !this.params.melody.length) {
       return;
     }
-    audioContext = new AudioContext();
     let lastEnd = audioContext.currentTime;
     for (let i = 0; i < this.params.melody.length; i++) {
       let soundDataItem = this.params.melody[i];

@@ -4,6 +4,7 @@ import { Button } from "./components/Button/Button";
 import { TrackControls } from "./components/TrackControls/TrackControls";
 import { Track } from "../music/Track";
 import { getId } from "../utils/id";
+import { parseSequence } from "../music/parser";
 
 enum PLAY_STATES {
   IDLE = "idle",
@@ -15,7 +16,30 @@ export const App: Component<{}> = (
   { template, child, state, memo, ref }
 ) => {
   const [playState, setPlayState] = state(PLAY_STATES.IDLE);
-  const [tracks, setTracks] = state<{ id: string; instance: Track }[]>([]);
+  const [tracks, setTracks] = state<{ id: string; instance: Track }[]>([
+    {
+      id: "a",
+      instance: new Track({
+        melody: parseSequence(
+          "E4/4 E4/4 E4/4 D#4/8. A#4/16 E4/4 D#4/8. A#4/16 E4/2\n" +
+            "D5/4 D5/4 D5/4 D#5/8. A#4/16 F#4/4 D#4/8. A#4/16 E4/2"
+        ),
+        bpm: 100,
+      }),
+    },
+    {
+      id: "b",
+      instance: new Track({
+        melody: parseSequence(
+          `D3/8 D3/8 A#3/8. A3/16 G3/8 G3/4.
+A#3/8 A#3/8 C4/8 A#3/8 A3/4. A3/8
+A3/8 A3/8 A3/8 A3/8 D4/8 C4/8 A#3/8 A3/8
+A#3/4 A#3/8. A#3/16 D4/8 A#3/8`
+        ),
+        bpm: 60,
+      }),
+    },
+  ]);
   const audioContext = ref<AudioContext | undefined>(undefined);
   const handlePlay = memo(
     () => () => {
@@ -24,10 +48,17 @@ export const App: Component<{}> = (
       }
       if (playState === PLAY_STATES.IDLE) {
         const context = new AudioContext();
+        context.onstatechange = function () {
+          if (context.state == "running") {
+            setPlayState(() => PLAY_STATES.PLAYING);
+          }
+          if (context.state == "suspended") {
+            setPlayState(() => PLAY_STATES.PAUSED);
+          }
+        };
         audioContext.current = context;
         tracks.forEach((track) => track.instance.play(context));
       }
-      setPlayState(() => PLAY_STATES.PLAYING);
     },
     [tracks, playState]
   );
@@ -35,6 +66,14 @@ export const App: Component<{}> = (
     () => () => {
       setPlayState(() => PLAY_STATES.PAUSED);
       audioContext.current?.suspend();
+    },
+    []
+  );
+  const handleStop = memo(
+    () => () => {
+      setPlayState(() => PLAY_STATES.IDLE);
+      audioContext.current?.close();
+      audioContext.current = undefined;
     },
     []
   );
@@ -66,6 +105,15 @@ export const App: Component<{}> = (
                 props: { text: "Pause", onClick: handlePause },
                 dependencies: [],
                 key: "pause",
+              })
+            : ""
+        }
+        ${
+          playState === PLAY_STATES.PLAYING || playState === PLAY_STATES.PAUSED
+            ? child(Button, {
+                props: { text: "Stop", onClick: handleStop },
+                dependencies: [],
+                key: "stop",
               })
             : ""
         }
