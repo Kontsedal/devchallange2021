@@ -4,7 +4,7 @@ import { Sound } from "../entities/sound";
 import { Adsr, AdsrParams } from "../entities/adsr";
 
 export type SoundData = {
-  frequency: number;
+  frequency: number | undefined;
   duration: {
     value: number;
     prolonged: boolean;
@@ -74,5 +74,17 @@ export class Track {
   }
   getMelody() {
     return this.params.melody;
+  }
+  getAdsr() {
+    return this.params.adsr;
+  }
+  setAdsr(value: AdsrParams) {
+    this.params.adsr = value;
+  }
+  getBpm() {
+    return this.params.bpm;
+  }
+  setBpm(value: number) {
+    this.params.bpm = value;
   }
 }
