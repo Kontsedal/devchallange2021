@@ -1,7 +1,7 @@
 import { INSTRUMENT } from "./instruments";
 import { initializeOrganInstrument } from "./instruments/organ";
-import { Sound } from "./entities/sound";
-import { Adsr, AdsrParams } from "./entities/adsr";
+import { Sound } from "../entities/sound";
+import { Adsr, AdsrParams } from "../entities/adsr";
 
 export type SoundData = {
   frequency: number;
@@ -41,6 +41,10 @@ export class Track {
       },
     } = params;
     this.params = { bpm, melody, instrument, adsr };
+  }
+
+  setMelody(melody: SoundData[]) {
+    this.params.melody = melody;
   }
 
   play() {

@@ -6,6 +6,8 @@ const CACHE_KEYS = {
   STATES: "states",
   EFFECTS: "effects",
   EVENTS: "events",
+  MEMO: "memo",
+  VALUE: "value",
   PREV_DEPENDENCIES: "prevDependencies",
   CLEANUP_FUNCTION: "cleanup_function",
 };
@@ -14,13 +16,9 @@ type Utils = {
     input: TemplateStringsArray,
     ...params: ReadonlyArray<any>
   ) => string;
-  child: (
-    childComponent: Component,
-    {
-      props,
-      dependencies,
-      key,
-    }: { props: any; dependencies: any[]; key: string }
+  child: <T extends object>(
+    childComponent: Component<T>,
+    { props, dependencies, key }: { props: T; dependencies: any[]; key: string }
   ) => () => string;
   ref: <T>(value: T) => { current: T };
   state: <T>(
@@ -32,18 +30,19 @@ type Utils = {
     selector: string,
     handler: (event: Event) => unknown
   ) => unknown;
+  memo: <T extends () => any>(fn: T, dependencies: any[]) => ReturnType<T>;
 };
 const KEY_DELIMITER = "->";
-export type Component = (props: any, utils: Utils) => string;
-export const render = (
-  component: Component,
+export type Component<T extends object> = (props: T, utils: Utils) => string;
+export const render = <T extends object>(
+  component: Component<T>,
   {
     props,
     target,
     key: parentKey,
   }: {
     key: string;
-    props?: any;
+    props: T;
     target?: HTMLElement;
   },
   cache = new Map<string | number, any>()
@@ -51,13 +50,13 @@ export const render = (
   const componentCache = getSubCache(cache, parentKey);
   let renderedChildrenKeys: string[] = [];
   let child =
-    (
-      childComponent: Component,
+    <T extends object>(
+      childComponent: Component<T>,
       {
         props,
         dependencies,
         key,
-      }: { props?: any; dependencies: any[]; key: string }
+      }: { props: T; dependencies: any[]; key: string }
     ) =>
     (): string => {
       let childKey = parentKey + KEY_DELIMITER + key;
@@ -66,8 +65,9 @@ export const render = (
       let prevDependencies = childCache.get(CACHE_KEYS.DEPENDENCIES);
       if (
         prevDependencies &&
-        !dependenciesAreEqual(prevDependencies, dependencies)
+        dependenciesAreEqual(prevDependencies, dependencies)
       ) {
+        renderedChildrenKeys.push(childKey);
         return childCache.get(CACHE_KEYS.HTML);
       }
       let html = render(childComponent, { props, key: childKey }, childCache);
@@ -88,6 +88,27 @@ export const render = (
     refCache.set(id, result);
     return result;
   };
+  let memo = <T extends () => any>(
+    fn: T,
+    dependencies: any[]
+  ): ReturnType<T> => {
+    callCount++;
+    const id = callCount;
+    const memosCache = getSubCache(cache, CACHE_KEYS.MEMO);
+    const memoCache = getSubCache(memosCache, id);
+    const prevDependencies = memoCache.get(CACHE_KEYS.PREV_DEPENDENCIES);
+    if (
+      memoCache.has(id) &&
+      dependenciesAreEqual(prevDependencies, dependencies)
+    ) {
+      return memoCache.get(CACHE_KEYS.VALUE);
+    }
+    let result = fn();
+    memoCache.set(CACHE_KEYS.VALUE, fn());
+    memoCache.set(CACHE_KEYS.DEPENDENCIES, dependencies);
+    return result;
+  };
+
   let state = <T>(
     value: T
   ): [state: T, setState: (newValue: (oldValue: T) => T) => void] => {
@@ -136,8 +157,17 @@ export const render = (
   ) => {
     return input.reduce((res, item, index) => {
       let entry = params[index];
-      let param =
-        typeof entry === "function" ? entry(props, getUtils()) : entry;
+      let param;
+      if (Array.isArray(entry)) {
+        param = entry.reduce((result, item) => {
+          return (
+            result +
+            (typeof item === "function" ? item(props, getUtils()) : item)
+          );
+        }, "");
+      } else {
+        param = typeof entry === "function" ? entry(props, getUtils()) : entry;
+      }
       return res + item + (param || "");
     }, "");
   };
@@ -165,28 +195,19 @@ export const render = (
           handler(event);
         }
       };
-      let rootElement = getParentElement();
-      rootElement.addEventListener(eventName, delegatedHandler);
+      document.body.addEventListener(eventName, delegatedHandler);
       eventsCache.set(id, () =>
-        rootElement.removeEventListener(eventName, delegatedHandler)
+        document.body.removeEventListener(eventName, delegatedHandler)
       );
     }, 0);
   };
 
   function getUtils(): Utils {
-    return { template, child, ref, state, effect, event };
+    return { template, child, ref, state, effect, event, memo };
   }
 
   function getRootElement() {
     return document.querySelector(`[data-key="${parentKey}"]`) as HTMLElement;
-  }
-
-  function getParentElement() {
-    let keyArray = parentKey.split(KEY_DELIMITER);
-    keyArray.pop();
-    return document.querySelector(
-      `[data-key="${keyArray.join(KEY_DELIMITER)}"]`
-    ) as HTMLElement;
   }
 
   function performRender(isRerender: boolean) {

@@ -1,4 +1,4 @@
-import { Instrument } from "../instruments/instrument";
+import { Instrument } from "../music/instruments/instrument";
 import { Adsr } from "./adsr";
 
 export const imag = [0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1];

@@ -1,0 +1,19 @@
+.root {
+  min-height: 100vh;
+  background: linear-gradient(to right, #a8c0ff, #3f2b96);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.container {
+  padding-top: 20px;
+  width: 100%;
+  max-width: 700px;
+  display: flex;
+  flex-direction: column;
+}
+
+.tracks {
+  width: 100%;
+}
