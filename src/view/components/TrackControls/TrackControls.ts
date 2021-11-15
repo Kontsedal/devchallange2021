@@ -8,6 +8,7 @@ import { Textarea } from "../Textarea/Textarea";
 import { AdsrParams, SoundData, TrackData } from "../../../music/types";
 import { Button } from "../Button/Button";
 import closeIcon from "./assets/close.svg";
+import { classNames as cn } from "../../../renderer/utils";
 
 type Props = {
   track: TrackData;
@@ -93,6 +94,23 @@ export const TrackControls: Component<Props> = (
                 ),
               },
               key: "instrument",
+            })}
+          </div>
+          <div>
+            <p class="${cn(s.label, s.center)}">Volume ${(
+    track.volume * 100
+  ).toFixed(0)}%</p>
+            ${child(Input, {
+              props: {
+                disabled,
+                value: track.volume,
+                type: "range",
+                min: 0,
+                max: 1,
+                step: 0.05,
+                onChange: getTrackFieldHandler("volume", Number),
+              },
+              key: "volume",
             })}
           </div>
         </div>

@@ -17,6 +17,7 @@ export type AdsrParams = {
 };
 export type TrackData = {
   bpm: number;
+  volume: number;
   melody: SoundData[];
   instrument: INSTRUMENT;
   adsr: AdsrParams;

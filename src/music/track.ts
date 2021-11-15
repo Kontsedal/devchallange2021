@@ -9,6 +9,7 @@ export const createTrackData = (params: Partial<TrackData> = {}): TrackData => {
     melody: [],
     instrument: CONFIG.DEFAULT_INSTRUMENT,
     adsr: CONFIG.DEFAULT_ADSR,
+    volume: CONFIG.DEFAULT_VOLUME,
     ...params,
   };
 };
@@ -29,7 +30,7 @@ export const playTrack = (track: TrackData, audioContext: AudioContext) => {
       playSound({
         audioContext: audioContext,
         freqValue: soundDataItem.frequency,
-        volume: 0.6,
+        volume: track.volume,
         startTime: lastEnd,
         instrument: getInstrument(track.instrument),
         adsr: track.adsr,
