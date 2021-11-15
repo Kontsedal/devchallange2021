@@ -80,11 +80,16 @@ export const TrackControls: Component<{ track: Track; disabled: boolean }> = (
             disabled,
             value: trackString,
             onChange: (newValue) => setTrackString(() => newValue),
-            hasError: melody.length === 0,
+            hasError: Boolean(melody.length === 0 && trackString.length),
             placeholder: "Enter a melody",
             className: s.melodyInput,
           },
-          dependencies: [trackString, melody.length === 0, disabled],
+          dependencies: [
+            trackString,
+            melody.length === 0,
+            trackString.length > 0,
+            disabled,
+          ],
           key: "trackInput",
         })}
         
