@@ -28,14 +28,12 @@ export const App: Component<{}> = (_, { template, child, state, memo }) => {
           onChangePlayState: setPlayState,
           playState,
         },
-        dependencies: [tracks, playState],
         key: "controls",
       })}
       <div class="${s.tracks}">
         ${tracks.map((track) => {
           return child(TrackControls, {
-            dependencies: [track.instance, disableControls],
-            key: track.id,
+            key: "track-" + track.id,
             props: {
               track: track.instance,
               disabled: disableControls,
@@ -51,7 +49,6 @@ export const App: Component<{}> = (_, { template, child, state, memo }) => {
           disabled: disableControls,
         },
         key: "add-track",
-        dependencies: [disableControls],
       })}
     </div>
     <div>E4/4 E4/4 E4/4 D#4/8. A#4/16 E4/4 D#4/8. A#4/16 E4/2

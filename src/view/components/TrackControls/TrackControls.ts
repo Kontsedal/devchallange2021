@@ -52,7 +52,6 @@ export const TrackControls: Component<{ track: Track; disabled: boolean }> = (
                 step: 1,
                 onChange: (newValue) => setBpm(() => Number(newValue)),
               },
-              dependencies: [bpm, disabled],
               key: "bpm",
             })}
           </div>
@@ -71,7 +70,6 @@ export const TrackControls: Component<{ track: Track; disabled: boolean }> = (
                   setInstrument(newValue as INSTRUMENT),
               },
               key: "instrument",
-              dependencies: [instrument, disabled],
             })}
           </div>
         </div>
@@ -84,12 +82,6 @@ export const TrackControls: Component<{ track: Track; disabled: boolean }> = (
             placeholder: "Enter a melody",
             className: s.melodyInput,
           },
-          dependencies: [
-            trackString,
-            melody.length === 0,
-            trackString.length > 0,
-            disabled,
-          ],
           key: "trackInput",
         })}
         
@@ -108,7 +100,6 @@ export const TrackControls: Component<{ track: Track; disabled: boolean }> = (
               onChange: (newValue) =>
                 setAdsr((prev) => ({ ...prev, attackTime: Number(newValue) })),
             },
-            dependencies: [adsr.attackTime, disabled],
             key: "adsr.attack",
           })}
         </div>
@@ -125,7 +116,6 @@ export const TrackControls: Component<{ track: Track; disabled: boolean }> = (
               onChange: (newValue) =>
                 setAdsr((prev) => ({ ...prev, decayTime: Number(newValue) })),
             },
-            dependencies: [adsr.decayTime, disabled],
             key: "adsr.decayTime",
           })}
         </div>
@@ -142,7 +132,6 @@ export const TrackControls: Component<{ track: Track; disabled: boolean }> = (
               onChange: (newValue) =>
                 setAdsr((prev) => ({ ...prev, sustainTime: Number(newValue) })),
             },
-            dependencies: [adsr.sustainTime, disabled],
             key: "adsr.sustainTime",
           })}
         </div>
@@ -164,7 +153,6 @@ export const TrackControls: Component<{ track: Track; disabled: boolean }> = (
                   sustainLevel: Number(newValue),
                 })),
             },
-            dependencies: [adsr.sustainLevel, disabled],
             key: "adsr.sustainLevel",
           })}
         </div>
@@ -184,7 +172,6 @@ export const TrackControls: Component<{ track: Track; disabled: boolean }> = (
                   releaseTime: Number(newValue),
                 })),
             },
-            dependencies: [adsr.releaseTime, disabled],
             key: "adsr.releaseTime",
           })}
         </div>

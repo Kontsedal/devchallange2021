@@ -1,3 +1,5 @@
+import { throttle } from "../utils/throttle";
+
 const CACHE_KEYS = {
   CHILDREN: "children",
   DEPENDENCIES: "deps",
@@ -10,6 +12,7 @@ const CACHE_KEYS = {
   VALUE: "value",
   PREV_DEPENDENCIES: "prevDependencies",
   CLEANUP_FUNCTION: "cleanup_function",
+  PROPS: "props",
 };
 export type ComponentUtils = {
   template: (
@@ -18,7 +21,7 @@ export type ComponentUtils = {
   ) => string;
   child: <T extends object>(
     childComponent: Component<T>,
-    { props, dependencies, key }: { props: T; dependencies: any[]; key: string }
+    { props, key }: { props: T; key: string }
   ) => () => string;
   ref: <T>(value: T) => { current: T };
   state: <T>(
@@ -33,8 +36,6 @@ export type Component<T extends object> = (
   utils: ComponentUtils,
   key: string
 ) => string;
-const rootMap = new Map<string | number, any>();
-
 export const render = <T extends object>(
   component: Component<T>,
   {
@@ -46,33 +47,20 @@ export const render = <T extends object>(
     props: T;
     target?: HTMLElement;
   },
-  cache = rootMap
+  cache = new Map<string | number, any>()
 ) => {
   const componentCache = getSubCache(cache, parentKey);
   let renderedChildrenKeys: string[] = [];
   let child =
     <T extends object>(
       childComponent: Component<T>,
-      {
-        props,
-        dependencies,
-        key,
-      }: { props: T; dependencies: any[]; key: string }
+      { props, key }: { props: T; key: string }
     ) =>
     (): string => {
       let childKey = parentKey + KEY_DELIMITER + key;
       let childrenCache = getSubCache(componentCache, CACHE_KEYS.CHILDREN);
       let childCache = getSubCache(childrenCache, childKey);
-      let prevDependencies = childCache.get(CACHE_KEYS.DEPENDENCIES);
-      if (
-        prevDependencies &&
-        dependenciesAreEqual(prevDependencies, dependencies)
-      ) {
-        renderedChildrenKeys.push(childKey);
-        return childCache.get(CACHE_KEYS.HTML);
-      }
       let html = render(childComponent, { props, key: childKey }, childCache);
-      childCache.set(CACHE_KEYS.DEPENDENCIES, dependencies);
       renderedChildrenKeys.push(childKey);
       return html;
     };
@@ -119,15 +107,17 @@ export const render = <T extends object>(
       return statesCache.get(id);
     }
     const setState = (value: T | ((oldValue: T) => T)) => {
-      let oldValue = statesCache.get(id);
-      let newValue: T;
-      if (typeof value === "function") {
-        newValue = (value as (oldValue: T) => T)(oldValue[0]);
-      } else {
-        newValue = value;
-      }
-      statesCache.set(id, [newValue, oldValue[1]]);
-      performRender(true);
+      setTimeout(() => {
+        let oldValue = statesCache.get(id);
+        let newValue: T;
+        if (typeof value === "function") {
+          newValue = (value as (oldValue: T) => T)(oldValue[0]);
+        } else {
+          newValue = value;
+        }
+        statesCache.set(id, [newValue, oldValue[1]]);
+        performRender(true, componentCache.get(CACHE_KEYS.PROPS));
+      }, 0);
     };
     statesCache.set(id, [initialValue, setState]);
     return [initialValue, setState];
@@ -188,14 +178,14 @@ export const render = <T extends object>(
     return document.querySelector(`[data-key="${parentKey}"]`) as HTMLElement;
   }
 
-  function performRender(isRerender: boolean) {
+  const performRender = throttle((isRerender: boolean, providedProps?: any) => {
+    const currentProps = providedProps || props;
     let componentRef = getRootElement();
-
-    const result = component(props, getUtils(), parentKey).replace(
+    componentCache.set(CACHE_KEYS.PROPS, currentProps);
+    const result = component(currentProps, getUtils(), parentKey).replace(
       /^(<\w+)/,
       `$1 data-key="${parentKey}"`
     );
-    cache.set(CACHE_KEYS.HTML, result);
     callCount = 0;
     if (target && !isRerender) {
       target.outerHTML = result;
@@ -224,7 +214,7 @@ export const render = <T extends object>(
     });
     renderedChildrenKeys = [];
     return result;
-  }
+  }, 16);
 
   return performRender(false);
 };

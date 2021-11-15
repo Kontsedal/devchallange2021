@@ -92,4 +92,13 @@ export class Track {
   setInstrument(instrument: INSTRUMENT) {
     this.params.instrument = instrument;
   }
+  getDuration() {
+    return this.params.melody.reduce((result, soundDataItem) => {
+      let duration = 240 / soundDataItem.duration.value;
+      if (soundDataItem.duration.prolonged) {
+        duration *= 1.5;
+      }
+      return result + duration / this.params.bpm;
+    }, 0);
+  }
 }

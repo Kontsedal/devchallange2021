@@ -14,14 +14,30 @@ type Props = {
 };
 export const MainControlPanel: Component<Props> = (
   { playState, onChangePlayState, tracks },
-  { memo, ref, template, child }
+  { memo, ref, template, child, state }
 ) => {
   const audioContext = ref<AudioContext | undefined>(undefined);
+  const [duration, setDuration] = state(0);
+  const [currentTime, setCurrentTime] = state(0);
+  const timeInterval = ref(0);
+  const trackPlayTime = (context: AudioContext) => {
+    let duration = Math.max(
+      ...tracks.map((track) => track.instance.getDuration())
+    );
+    setDuration(duration);
+    timeInterval.current = setInterval(() => {
+      setCurrentTime(context.currentTime);
+      if (context.currentTime >= duration) {
+        handleStop();
+        clearInterval(timeInterval.current);
+      }
+    }, 300);
+  };
   const handlePlay = memo(
     () => () => {
       const canPlay = tracks.some((track) => track.instance.getMelody().length);
       if (!canPlay) {
-        return;
+        return alert("There is nothing to play");
       }
       if (playState === PLAY_STATE.PAUSED) {
         audioContext.current?.resume();
@@ -38,6 +54,7 @@ export const MainControlPanel: Component<Props> = (
         };
         audioContext.current = context;
         tracks.forEach((track) => track.instance.play(context));
+        trackPlayTime(context);
       }
     },
     [tracks, playState]
@@ -58,7 +75,9 @@ export const MainControlPanel: Component<Props> = (
     []
   );
 
-  return template`<div class="${s.controls}">
+  return template`<div>
+
+  <div class="${s.controls}">
         ${
           playState === PLAY_STATE.IDLE || playState === PLAY_STATE.PAUSED
             ? child(Button, {
@@ -67,7 +86,6 @@ export const MainControlPanel: Component<Props> = (
                   onClick: handlePlay,
                   className: s.playButton,
                 },
-                dependencies: [handlePlay],
                 key: "play",
               })
             : ""
@@ -80,7 +98,6 @@ export const MainControlPanel: Component<Props> = (
                   onClick: handlePause,
                   className: s.playButton,
                 },
-                dependencies: [],
                 key: "pause",
               })
             : ""
@@ -93,10 +110,13 @@ export const MainControlPanel: Component<Props> = (
                   text: `<img alt="stop" src="${stopIcon}"/>`,
                   onClick: handleStop,
                 },
-                dependencies: [],
                 key: "stop",
               })
             : ""
         }
-      </div>`;
+      </div>
+      <div style="visibility: ${
+        playState === PLAY_STATE.IDLE ? "hidden" : "visible"
+      }">${currentTime.toFixed(0)}/${duration.toFixed(0)}</div>
+</div>`;
 };
