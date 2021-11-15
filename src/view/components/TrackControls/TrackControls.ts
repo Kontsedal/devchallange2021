@@ -149,9 +149,9 @@ export const TrackControls: Component<Props> = (
           })}
         </div>
         <div>
-          <p class="${s.label}">Sustain level (${String(
+          <p class="${s.label}">Sustain level (${(
     track.adsr.sustainLevel * 100
-  )}%):</p>
+  ).toFixed(0)}%):</p>
           ${child(Input, {
             props: {
               disabled,

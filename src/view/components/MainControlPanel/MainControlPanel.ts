@@ -19,14 +19,15 @@ export const MainControlPanel: Component<Props> = (
   { memo, ref, template, child, state }
 ) => {
   const audioContext = ref<AudioContext | undefined>(undefined);
-  const [duration, setDuration] = state(0);
+  const duration = memo(() => {
+    return Math.max(
+      0,
+      ...tracks.map((track) => getTrackDuration(track.trackData))
+    );
+  }, [tracks]);
   const [currentTime, setCurrentTime] = state(0);
   const timeInterval = ref(0);
   const trackPlayTime = (context: AudioContext) => {
-    let duration = Math.max(
-      ...tracks.map((track) => getTrackDuration(track.trackData))
-    );
-    setDuration(duration);
     timeInterval.current = setInterval(() => {
       setCurrentTime(context.currentTime);
       if (context.currentTime >= duration) {
@@ -118,8 +119,8 @@ export const MainControlPanel: Component<Props> = (
             : ""
         }
       </div>
-      <div class="${s.duration}" style="visibility: ${
-    playState === PLAY_STATE.IDLE ? "hidden" : "visible"
-  }">${formatTime(currentTime)}/${formatTime(duration)}</div>
+      <div class="${s.duration}" >${formatTime(currentTime)} / ${formatTime(
+    duration
+  )}</div>
 </div>`;
 };
