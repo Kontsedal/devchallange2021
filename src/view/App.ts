@@ -4,55 +4,12 @@ import { Button } from "./components/Button/Button";
 import { TrackControls } from "./components/TrackControls/TrackControls";
 import { Track } from "../music/Track";
 import { getId } from "../utils/id";
+import { PLAY_STATE } from "./constants";
+import { MainControlPanel } from "./components/MainControlPanel/MainControlPanel";
 
-enum PLAY_STATES {
-  IDLE = "idle",
-  PLAYING = "playing",
-  PAUSED = "paused",
-}
-export const App: Component<{}> = (
-  _,
-  { template, child, state, memo, ref }
-) => {
-  const [playState, setPlayState] = state(PLAY_STATES.IDLE);
+export const App: Component<{}> = (_, { template, child, state, memo }) => {
+  const [playState, setPlayState] = state(PLAY_STATE.IDLE);
   const [tracks, setTracks] = state<{ id: string; instance: Track }[]>([]);
-  const audioContext = ref<AudioContext | undefined>(undefined);
-  const handlePlay = memo(
-    () => () => {
-      if (playState === PLAY_STATES.PAUSED) {
-        audioContext.current?.resume();
-      }
-      if (playState === PLAY_STATES.IDLE) {
-        const context = new AudioContext();
-        context.onstatechange = function () {
-          if (context.state == "running") {
-            setPlayState(() => PLAY_STATES.PLAYING);
-          }
-          if (context.state == "suspended") {
-            setPlayState(() => PLAY_STATES.PAUSED);
-          }
-        };
-        audioContext.current = context;
-        tracks.forEach((track) => track.instance.play(context));
-      }
-    },
-    [tracks, playState]
-  );
-  const handlePause = memo(
-    () => () => {
-      setPlayState(() => PLAY_STATES.PAUSED);
-      audioContext.current?.suspend();
-    },
-    []
-  );
-  const handleStop = memo(
-    () => () => {
-      setPlayState(() => PLAY_STATES.IDLE);
-      audioContext.current?.close();
-      audioContext.current = undefined;
-    },
-    []
-  );
   const addTrack = memo(
     () => () => {
       setTracks((tracks) => [
@@ -65,35 +22,15 @@ export const App: Component<{}> = (
   return template`<div class="${s.root}">
     
     <div class="${s.container}">
-      <div class="${s.controls}">
-        ${
-          playState === PLAY_STATES.IDLE || playState === PLAY_STATES.PAUSED
-            ? child(Button, {
-                props: { text: "Play", onClick: handlePlay },
-                dependencies: [handlePlay],
-                key: "play",
-              })
-            : ""
-        }
-        ${
-          playState === PLAY_STATES.PLAYING
-            ? child(Button, {
-                props: { text: "Pause", onClick: handlePause },
-                dependencies: [],
-                key: "pause",
-              })
-            : ""
-        }
-        ${
-          playState === PLAY_STATES.PLAYING || playState === PLAY_STATES.PAUSED
-            ? child(Button, {
-                props: { text: "Stop", onClick: handleStop },
-                dependencies: [],
-                key: "stop",
-              })
-            : ""
-        }
-      </div>
+      ${child(MainControlPanel, {
+        props: {
+          tracks,
+          onChangePlayState: setPlayState,
+          playState,
+        },
+        dependencies: [tracks, playState],
+        key: "controls",
+      })}
       <div class="${s.tracks}">
         ${tracks.map((track) => {
           return child(TrackControls, {

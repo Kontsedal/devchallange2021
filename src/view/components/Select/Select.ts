@@ -9,7 +9,6 @@ export const Select: Component<{
   options: { value: string; title: string }[];
 }> = ({ value, onChange, options }, { ref, effect }) => {
   const id = ref("js-select-" + getId());
-  console.log({ selectValue: value });
   domEvent(
     effect,
     "change",
