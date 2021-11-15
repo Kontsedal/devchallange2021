@@ -1,14 +1,16 @@
 import { Component } from "renderer/renderer";
-import { Track } from "music/Track";
+import { getTrackDuration, playTrack } from "music/track";
 import { PLAY_STATE } from "../../constants";
 import { Button } from "../Button/Button";
 import s from "./MainControlPanel.module.scss";
 import playIcon from "./assets/play.svg";
 import pauseIcon from "./assets/pause.svg";
 import stopIcon from "./assets/stop.svg";
+import { TrackData } from "../../../music/types";
+import { formatTime } from "../../../utils/time";
 
 type Props = {
-  tracks: { id: string; instance: Track }[];
+  tracks: { id: string; trackData: TrackData }[];
   onChangePlayState: (value: PLAY_STATE) => unknown;
   playState: PLAY_STATE;
 };
@@ -22,20 +24,19 @@ export const MainControlPanel: Component<Props> = (
   const timeInterval = ref(0);
   const trackPlayTime = (context: AudioContext) => {
     let duration = Math.max(
-      ...tracks.map((track) => track.instance.getDuration())
+      ...tracks.map((track) => getTrackDuration(track.trackData))
     );
     setDuration(duration);
     timeInterval.current = setInterval(() => {
       setCurrentTime(context.currentTime);
       if (context.currentTime >= duration) {
         handleStop();
-        clearInterval(timeInterval.current);
       }
     }, 300);
   };
   const handlePlay = memo(
     () => () => {
-      const canPlay = tracks.some((track) => track.instance.getMelody().length);
+      const canPlay = tracks.some((track) => track.trackData.melody.length);
       if (!canPlay) {
         return alert("There is nothing to play");
       }
@@ -53,7 +54,7 @@ export const MainControlPanel: Component<Props> = (
           }
         };
         audioContext.current = context;
-        tracks.forEach((track) => track.instance.play(context));
+        tracks.forEach((track) => playTrack(track.trackData, context));
         trackPlayTime(context);
       }
     },
@@ -69,13 +70,15 @@ export const MainControlPanel: Component<Props> = (
   const handleStop = memo(
     () => () => {
       onChangePlayState(PLAY_STATE.IDLE);
+      clearInterval(timeInterval.current);
+      setCurrentTime(0);
       audioContext.current?.close();
       audioContext.current = undefined;
     },
     []
   );
 
-  return template`<div>
+  return template`<div class="${s.panel}">
 
   <div class="${s.controls}">
         ${
@@ -115,8 +118,8 @@ export const MainControlPanel: Component<Props> = (
             : ""
         }
       </div>
-      <div style="visibility: ${
-        playState === PLAY_STATE.IDLE ? "hidden" : "visible"
-      }">${currentTime.toFixed(0)}/${duration.toFixed(0)}</div>
+      <div class="${s.duration}" style="visibility: ${
+    playState === PLAY_STATE.IDLE ? "hidden" : "visible"
+  }">${formatTime(currentTime)}/${formatTime(duration)}</div>
 </div>`;
 };

@@ -1,7 +1,11 @@
+.panel {
+  margin-bottom: 20px;
+}
+
 .controls {
   display: flex;
   justify-content: center;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 
 .playButton {
@@ -24,4 +28,11 @@
   position: relative;
   transform: translateX(-30%);
   z-index: 1;
+  &:hover {
+    z-index: 3;
+  }
+}
+.duration {
+  text-align: center;
+  font-weight: bold;
 }
