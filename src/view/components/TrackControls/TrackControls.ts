@@ -3,6 +3,8 @@ import s from "./TrackControls.module.scss";
 import { SoundData, Track } from "music/Track";
 import { Input } from "../Input/Input";
 import { parseSequence } from "../../../music/parser";
+import { Select } from "../Select/Select";
+import { INSTRUMENT } from "../../../music/instruments";
 
 export const TrackControls: Component<{ track: Track }> = (
   { track },
@@ -12,13 +14,16 @@ export const TrackControls: Component<{ track: Track }> = (
   const [melody, setMelody] = state(track.getMelody());
   const [adsr, setAdsr] = state(track.getAdsr());
   const [bpm, setBpm] = state(track.getBpm());
+  const [instrument, setInstrument] = state(track.getInstrument());
   effect(() => {
     track.setAdsr(adsr);
   }, [adsr]);
   effect(() => {
     track.setBpm(bpm);
   }, [bpm]);
-
+  effect(() => {
+    track.setInstrument(instrument);
+  }, [instrument]);
   effect(() => {
     if (!trackString) {
       return;
@@ -44,7 +49,7 @@ export const TrackControls: Component<{ track: Track }> = (
       })}
       <div>
         <div>
-          <p>Attack time (${adsr.attackTime}s):</p>
+          <p>Attack time (${String(adsr.attackTime)}s):</p>
           ${child(Input, {
             props: {
               type: "range",
@@ -60,7 +65,7 @@ export const TrackControls: Component<{ track: Track }> = (
           })}
         </div>
         <div>
-          <p>Decay time (${adsr.decayTime}s):</p>
+          <p>Decay time (${String(adsr.decayTime)}s):</p>
           ${child(Input, {
             props: {
               type: "range",
@@ -76,7 +81,7 @@ export const TrackControls: Component<{ track: Track }> = (
           })}
         </div>
         <div>
-          <p>Sustain time (${adsr.sustainTime}s):</p>
+          <p>Sustain time (${String(adsr.sustainTime)}s):</p>
           ${child(Input, {
             props: {
               type: "range",
@@ -92,7 +97,7 @@ export const TrackControls: Component<{ track: Track }> = (
           })}
         </div>
         <div>
-          <p>Sustain level (${adsr.sustainLevel * 100}%):</p>
+          <p>Sustain level (${String(adsr.sustainLevel * 100)}%):</p>
           ${child(Input, {
             props: {
               type: "range",
@@ -111,7 +116,7 @@ export const TrackControls: Component<{ track: Track }> = (
           })}
         </div>
         <div>
-          <p>Release time (${adsr.releaseTime}s):</p>
+          <p>Release time (${String(adsr.releaseTime)}s):</p>
           ${child(Input, {
             props: {
               type: "range",
@@ -130,37 +135,35 @@ export const TrackControls: Component<{ track: Track }> = (
           })}
         </div>
         <div>
-          <p>Release time (${adsr.releaseTime}s):</p>
-          ${child(Input, {
-            props: {
-              type: "number",
-              value: adsr.releaseTime,
-              min: 1,
-              max: 240,
-              step: 1,
-              onChange: (newValue) =>
-                setAdsr((prev) => ({
-                  ...prev,
-                  releaseTime: Number(newValue),
-                })),
-            },
-            dependencies: [adsr.releaseTime],
-            key: "adsr.releaseTime",
-          })}
-        </div>
-        <div>
           <p>BPM</p>
           ${child(Input, {
             props: {
               type: "number",
               value: bpm,
               min: 1,
-              max: 240,
+              max: 1000,
               step: 1,
               onChange: (newValue) => setBpm(() => Number(newValue)),
             },
             dependencies: [bpm],
             key: "bpm",
+          })}
+        </div>
+        <div>
+          <p>Instrument</p>
+          ${child(Select, {
+            props: {
+              options: [
+                { value: INSTRUMENT.BASIC, title: "Basic" },
+                { value: INSTRUMENT.ORGAN, title: "Organ" },
+                { value: INSTRUMENT.BASS, title: "Bass" },
+              ],
+              value: instrument,
+              onChange: (newValue: string) =>
+                setInstrument(newValue as INSTRUMENT),
+            },
+            key: "instrument",
+            dependencies: [instrument],
           })}
         </div>
       </div>

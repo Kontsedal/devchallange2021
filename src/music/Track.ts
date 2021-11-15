@@ -1,5 +1,4 @@
-import { INSTRUMENT } from "./instruments";
-import { initializeOrganInstrument } from "./instruments/organ";
+import { getInstrument, INSTRUMENT } from "./instruments";
 import { Sound } from "../entities/sound";
 import { Adsr, AdsrParams } from "../entities/adsr";
 
@@ -60,7 +59,7 @@ export class Track {
           freqValue: soundDataItem.frequency,
           volume: 0.6,
           startTime: lastEnd,
-          instrument: initializeOrganInstrument,
+          instrument: getInstrument(this.params.instrument),
           adsr: new Adsr(this.params.adsr),
         });
         sound.play();
@@ -86,5 +85,11 @@ export class Track {
   }
   setBpm(value: number) {
     this.params.bpm = value;
+  }
+  getInstrument() {
+    return this.params.instrument;
+  }
+  setInstrument(instrument: INSTRUMENT) {
+    this.params.instrument = instrument;
   }
 }

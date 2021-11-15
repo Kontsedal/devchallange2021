@@ -95,13 +95,13 @@ export const App: Component<{}> = (
         }
       </div>
       <div class="${s.tracks}">
-        ${tracks.map((track) =>
-          child(TrackControls, {
-            dependencies: [],
+        ${tracks.map((track) => {
+          return child(TrackControls, {
+            dependencies: [track.instance],
             key: track.id,
             props: { track: track.instance },
-          })
-        )}
+          });
+        })}
       </div>
       ${child(Button, {
         props: { onClick: addTrack, text: "Add a new track" },

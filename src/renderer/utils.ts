@@ -24,3 +24,17 @@ export const domEvent = (
     return () => document.body.removeEventListener(eventName, delegatedHandler);
   }, [handler, ...dependencies]);
 };
+
+export const attributes = (
+  attributes: Record<string, string | number | boolean>
+) =>
+  Object.entries(attributes).reduce((result, [key, value]) => {
+    if (typeof value === "boolean") {
+      if (value) {
+        return result + ` ${key}`;
+      }
+      return result;
+    } else {
+      return result + ` ${key}="${value}"`;
+    }
+  }, "");

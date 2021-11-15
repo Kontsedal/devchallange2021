@@ -23,7 +23,7 @@ export type ComponentUtils = {
   ref: <T>(value: T) => { current: T };
   state: <T>(
     value: T
-  ) => [state: T, setState: (newValue: (oldValue: T) => T) => void];
+  ) => [state: T, setState: (newValue: T | ((oldValue: T) => T)) => void];
   effect: (fn: () => (() => void) | void, dependencies: any[]) => void;
   memo: <T extends () => any>(fn: T, dependencies: any[]) => ReturnType<T>;
 };
@@ -110,21 +110,27 @@ export const render = <T extends object>(
   };
 
   let state = <T>(
-    value: T
-  ): [state: T, setState: (newValue: (oldValue: T) => T) => void] => {
+    initialValue: T
+  ): [state: T, setState: (newValue: T | ((oldValue: T) => T)) => void] => {
     callCount++;
     const id = callCount;
     const statesCache = getSubCache(cache, CACHE_KEYS.REFS);
     if (statesCache.has(id)) {
       return statesCache.get(id);
     }
-    const setState = (valueGetter: (oldValue: T) => T) => {
+    const setState = (value: T | ((oldValue: T) => T)) => {
       let oldValue = statesCache.get(id);
-      statesCache.set(id, [valueGetter(oldValue[0]), oldValue[1]]);
+      let newValue: T;
+      if (typeof value === "function") {
+        newValue = (value as (oldValue: T) => T)(oldValue[0]);
+      } else {
+        newValue = value;
+      }
+      statesCache.set(id, [newValue, oldValue[1]]);
       performRender(true);
     };
-    statesCache.set(id, [value, setState]);
-    return [value, setState];
+    statesCache.set(id, [initialValue, setState]);
+    return [initialValue, setState];
   };
   let effect = (fn: () => (() => void) | void, dependencies: any[]) => {
     callCount++;

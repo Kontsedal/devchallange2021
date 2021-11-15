@@ -23,7 +23,18 @@ export const Input: Component<{
     "." + id.current,
     (event) => {
       if (typeof onChange === "function") {
-        onChange((event.target as HTMLInputElement).value);
+        let value = (event.target as HTMLInputElement).value;
+        if (type === "number") {
+          let numValue = Number(value.replace(/e/gim, ""));
+          if (typeof max === "number" && numValue > max) {
+            numValue = max;
+          }
+          if (typeof min === "number" && numValue < min) {
+            numValue = min;
+          }
+          value = String(numValue);
+        }
+        onChange(value);
       }
     },
     [onChange]
