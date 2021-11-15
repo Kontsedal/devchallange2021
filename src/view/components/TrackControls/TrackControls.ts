@@ -6,14 +6,17 @@ import { Select } from "../Select/Select";
 import { INSTRUMENT } from "../../../music/instruments";
 import { Textarea } from "../Textarea/Textarea";
 import { AdsrParams, SoundData, TrackData } from "../../../music/types";
+import { Button } from "../Button/Button";
+import closeIcon from "./assets/close.svg";
 
 type Props = {
   track: TrackData;
   disabled: boolean;
   onTrackChange: (value: TrackData) => unknown;
+  onClose: () => unknown;
 };
 export const TrackControls: Component<Props> = (
-  { track, disabled, onTrackChange },
+  { track, disabled, onTrackChange, onClose },
   { template, child, state, effect }
 ) => {
   const [trackString, setTrackString] = state("");
@@ -48,6 +51,14 @@ export const TrackControls: Component<Props> = (
       });
     };
   return template`<div class="${s.track}">
+      ${child(Button, {
+        props: {
+          onClick: onClose,
+          className: s.close,
+          text: `<img alt="close" src="${closeIcon}"/>`,
+        },
+        key: "close",
+      })}
       <div class="${s.side}">
         <div class="${s.bpmInstrument}">
           <div>

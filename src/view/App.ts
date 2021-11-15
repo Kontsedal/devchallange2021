@@ -38,6 +38,9 @@ export const App: Component<{}> = (_, { template, child, state, memo }) => {
             props: {
               track: track.trackData,
               disabled: disableControls,
+              onClose: () => {
+                setTracks(tracks.filter((item) => item.id !== track.id));
+              },
               onTrackChange: (newTrack: TrackData) =>
                 setTracks((tracks) =>
                   tracks.map((oldTrack) => {
