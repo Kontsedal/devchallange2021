@@ -26,7 +26,7 @@ export const domEvent = (
 };
 
 export const attributes = (
-  attributes: Record<string, string | number | boolean>
+  attributes: Record<string, string | number | boolean | undefined>
 ) =>
   Object.entries(attributes).reduce((result, [key, value]) => {
     if (typeof value === "boolean") {
@@ -35,6 +35,9 @@ export const attributes = (
       }
       return result;
     } else {
-      return result + ` ${key}="${value}"`;
+      if (typeof value !== "undefined") {
+        return result + ` ${key}="${value}"`;
+      }
+      return result;
     }
   }, "");

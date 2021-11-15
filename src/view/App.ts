@@ -19,6 +19,7 @@ export const App: Component<{}> = (_, { template, child, state, memo }) => {
     },
     []
   );
+  const disableControls = playState !== PLAY_STATE.IDLE;
   return template`<div class="${s.root}">
     <div class="${s.container}">
       ${child(MainControlPanel, {
@@ -33,9 +34,12 @@ export const App: Component<{}> = (_, { template, child, state, memo }) => {
       <div class="${s.tracks}">
         ${tracks.map((track) => {
           return child(TrackControls, {
-            dependencies: [track.instance],
+            dependencies: [track.instance, disableControls],
             key: track.id,
-            props: { track: track.instance },
+            props: {
+              track: track.instance,
+              disabled: disableControls,
+            },
           });
         })}
       </div>
@@ -44,9 +48,10 @@ export const App: Component<{}> = (_, { template, child, state, memo }) => {
           onClick: addTrack,
           text: "Add a new track",
           className: s.addButton,
+          disabled: disableControls,
         },
         key: "add-track",
-        dependencies: [],
+        dependencies: [disableControls],
       })}
     </div>
     <div>E4/4 E4/4 E4/4 D#4/8. A#4/16 E4/4 D#4/8. A#4/16 E4/2

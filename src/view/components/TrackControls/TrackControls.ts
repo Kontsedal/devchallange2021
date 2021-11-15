@@ -5,9 +5,10 @@ import { Input } from "../Input/Input";
 import { parseSequence } from "../../../music/parser";
 import { Select } from "../Select/Select";
 import { INSTRUMENT } from "../../../music/instruments";
+import { Textarea } from "../Textarea/Textarea";
 
-export const TrackControls: Component<{ track: Track }> = (
-  { track },
+export const TrackControls: Component<{ track: Track; disabled: boolean }> = (
+  { track, disabled },
   { template, child, state, effect }
 ) => {
   const [trackString, setTrackString] = state("");
@@ -37,21 +38,63 @@ export const TrackControls: Component<{ track: Track }> = (
     }
   }, [trackString]);
   return template`<div class="${s.track}">
-      ${child(Input, {
-        props: {
-          value: trackString,
-          onChange: (newValue) => setTrackString(() => newValue),
-          hasError: melody.length === 0,
-          placeholder: "Enter a melody",
-        },
-        dependencies: [trackString, melody.length === 0],
-        key: "trackInput",
-      })}
+      <div class="${s.side}">
+        <div class="${s.bpmInstrument}">
+          <div>
+            <p class="${s.label}">BPM</p>
+            ${child(Input, {
+              props: {
+                type: "number",
+                value: bpm,
+                min: 1,
+                max: 1000,
+                disabled,
+                step: 1,
+                onChange: (newValue) => setBpm(() => Number(newValue)),
+              },
+              dependencies: [bpm, disabled],
+              key: "bpm",
+            })}
+          </div>
+          <div>
+            <p class="${s.label}">Instrument</p>
+            ${child(Select, {
+              props: {
+                disabled,
+                options: [
+                  { value: INSTRUMENT.BASIC, title: "Basic" },
+                  { value: INSTRUMENT.ORGAN, title: "Organ" },
+                  { value: INSTRUMENT.BASS, title: "Bass" },
+                ],
+                value: instrument,
+                onChange: (newValue: string) =>
+                  setInstrument(newValue as INSTRUMENT),
+              },
+              key: "instrument",
+              dependencies: [instrument, disabled],
+            })}
+          </div>
+        </div>
+        ${child(Textarea, {
+          props: {
+            disabled,
+            value: trackString,
+            onChange: (newValue) => setTrackString(() => newValue),
+            hasError: melody.length === 0,
+            placeholder: "Enter a melody",
+            className: s.melodyInput,
+          },
+          dependencies: [trackString, melody.length === 0, disabled],
+          key: "trackInput",
+        })}
+        
+      </div>
+      <div class="${s.side}">
       <div>
-        <div>
-          <p>Attack time (${String(adsr.attackTime)}s):</p>
+          <p class="${s.label}">Attack time (${String(adsr.attackTime)}s):</p>
           ${child(Input, {
             props: {
+              disabled,
               type: "range",
               value: adsr.attackTime,
               min: 0,
@@ -60,14 +103,15 @@ export const TrackControls: Component<{ track: Track }> = (
               onChange: (newValue) =>
                 setAdsr((prev) => ({ ...prev, attackTime: Number(newValue) })),
             },
-            dependencies: [adsr.attackTime],
+            dependencies: [adsr.attackTime, disabled],
             key: "adsr.attack",
           })}
         </div>
         <div>
-          <p>Decay time (${String(adsr.decayTime)}s):</p>
+          <p class="${s.label}">Decay time (${String(adsr.decayTime)}s):</p>
           ${child(Input, {
             props: {
+              disabled,
               type: "range",
               value: adsr.decayTime,
               min: 0,
@@ -76,14 +120,15 @@ export const TrackControls: Component<{ track: Track }> = (
               onChange: (newValue) =>
                 setAdsr((prev) => ({ ...prev, decayTime: Number(newValue) })),
             },
-            dependencies: [adsr.decayTime],
+            dependencies: [adsr.decayTime, disabled],
             key: "adsr.decayTime",
           })}
         </div>
-        <div>
+        <div class="${s.label}">
           <p>Sustain time (${String(adsr.sustainTime)}s):</p>
           ${child(Input, {
             props: {
+              disabled,
               type: "range",
               value: adsr.sustainTime,
               min: 0,
@@ -92,14 +137,17 @@ export const TrackControls: Component<{ track: Track }> = (
               onChange: (newValue) =>
                 setAdsr((prev) => ({ ...prev, sustainTime: Number(newValue) })),
             },
-            dependencies: [adsr.sustainTime],
+            dependencies: [adsr.sustainTime, disabled],
             key: "adsr.sustainTime",
           })}
         </div>
         <div>
-          <p>Sustain level (${String(adsr.sustainLevel * 100)}%):</p>
+          <p class="${s.label}">Sustain level (${String(
+    adsr.sustainLevel * 100
+  )}%):</p>
           ${child(Input, {
             props: {
+              disabled,
               type: "range",
               value: adsr.sustainLevel,
               min: 0,
@@ -111,14 +159,15 @@ export const TrackControls: Component<{ track: Track }> = (
                   sustainLevel: Number(newValue),
                 })),
             },
-            dependencies: [adsr.sustainLevel],
+            dependencies: [adsr.sustainLevel, disabled],
             key: "adsr.sustainLevel",
           })}
         </div>
         <div>
-          <p>Release time (${String(adsr.releaseTime)}s):</p>
+          <p class="${s.label}">Release time (${String(adsr.releaseTime)}s):</p>
           ${child(Input, {
             props: {
+              disabled,
               type: "range",
               value: adsr.releaseTime,
               min: 0,
@@ -130,40 +179,8 @@ export const TrackControls: Component<{ track: Track }> = (
                   releaseTime: Number(newValue),
                 })),
             },
-            dependencies: [adsr.releaseTime],
+            dependencies: [adsr.releaseTime, disabled],
             key: "adsr.releaseTime",
-          })}
-        </div>
-        <div>
-          <p>BPM</p>
-          ${child(Input, {
-            props: {
-              type: "number",
-              value: bpm,
-              min: 1,
-              max: 1000,
-              step: 1,
-              onChange: (newValue) => setBpm(() => Number(newValue)),
-            },
-            dependencies: [bpm],
-            key: "bpm",
-          })}
-        </div>
-        <div>
-          <p>Instrument</p>
-          ${child(Select, {
-            props: {
-              options: [
-                { value: INSTRUMENT.BASIC, title: "Basic" },
-                { value: INSTRUMENT.ORGAN, title: "Organ" },
-                { value: INSTRUMENT.BASS, title: "Bass" },
-              ],
-              value: instrument,
-              onChange: (newValue: string) =>
-                setInstrument(newValue as INSTRUMENT),
-            },
-            key: "instrument",
-            dependencies: [instrument],
           })}
         </div>
       </div>

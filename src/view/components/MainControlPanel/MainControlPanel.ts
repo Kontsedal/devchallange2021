@@ -19,6 +19,10 @@ export const MainControlPanel: Component<Props> = (
   const audioContext = ref<AudioContext | undefined>(undefined);
   const handlePlay = memo(
     () => () => {
+      const canPlay = tracks.some((track) => track.instance.getMelody().length);
+      if (!canPlay) {
+        return;
+      }
       if (playState === PLAY_STATE.PAUSED) {
         audioContext.current?.resume();
       }

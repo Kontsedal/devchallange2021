@@ -1,0 +1,6 @@
+.textarea {
+  padding: 9px;
+  &.hasError {
+    border: 1px solid tomato;
+  }
+}

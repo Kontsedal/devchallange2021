@@ -25,9 +25,9 @@ button.addButton {
   padding: 10px;
   font-size: 16px;
   font-weight: bold;
-  border: 2px solid var(--primary-200);
+  background-color: var(--primary-200);
 
   &:hover {
-    background-color: var(--primary-200);
+    background-color: var(--primary-300);
   }
 }

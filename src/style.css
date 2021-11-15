@@ -2,6 +2,7 @@
 :root {
   --primary-100: #fff2da;
   --primary-200: #ffdb93;
+  --primary-300: #ffd37b;
   --black-500: #2f2f2fff;
   --grey-200: #ededed;
 }
@@ -18,6 +19,11 @@ body {
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
   color: var(--black-500);
+}
+
+:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 input[type="range"] {

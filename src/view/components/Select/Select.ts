@@ -5,9 +5,10 @@ import { attributes as attr, classNames as cn, domEvent } from "renderer/utils";
 
 export const Select: Component<{
   value: string | number;
+  disabled: boolean;
   onChange: (newValue: string) => unknown;
   options: { value: string; title: string }[];
-}> = ({ value, onChange, options }, { ref, effect }) => {
+}> = ({ value, disabled, onChange, options }, { ref, effect }) => {
   const id = ref("js-select-" + getId());
   domEvent(
     effect,
@@ -20,7 +21,10 @@ export const Select: Component<{
     },
     [onChange]
   );
-  return `<select class="${cn(s.input, id.current)}">
+  return `<select  ${attr({
+    disabled,
+    class: cn(s.select, id.current),
+  })}>
       ${options
         .map(
           (option) =>
