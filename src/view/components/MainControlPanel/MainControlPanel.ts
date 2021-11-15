@@ -27,10 +27,21 @@ export const MainControlPanel: Component<Props> = (
   }, [tracks]);
   const [currentTime, setCurrentTime] = state(0);
   const timeInterval = ref(0);
+  const handleStop = memo(
+    () => () => {
+      onChangePlayState(PLAY_STATE.IDLE);
+      clearInterval(timeInterval.current);
+      setCurrentTime(0);
+      audioContext.current?.close();
+      audioContext.current = undefined;
+    },
+    []
+  );
   const trackPlayTime = (context: AudioContext) => {
     timeInterval.current = setInterval(() => {
       setCurrentTime(context.currentTime);
       if (context.currentTime >= duration) {
+        clearInterval(timeInterval.current);
         handleStop();
       }
     }, 300);
@@ -65,16 +76,6 @@ export const MainControlPanel: Component<Props> = (
     () => () => {
       onChangePlayState(PLAY_STATE.PAUSED);
       audioContext.current?.suspend();
-    },
-    []
-  );
-  const handleStop = memo(
-    () => () => {
-      onChangePlayState(PLAY_STATE.IDLE);
-      clearInterval(timeInterval.current);
-      setCurrentTime(0);
-      audioContext.current?.close();
-      audioContext.current = undefined;
     },
     []
   );
@@ -119,8 +120,8 @@ export const MainControlPanel: Component<Props> = (
             : ""
         }
       </div>
-      <div class="${s.duration}" >${formatTime(currentTime)} / ${formatTime(
-    duration
-  )}</div>
+      <div class="${s.duration}" >${formatTime(
+    playState === PLAY_STATE.IDLE ? 0 : currentTime
+  )} / ${formatTime(duration)}</div>
 </div>`;
 };

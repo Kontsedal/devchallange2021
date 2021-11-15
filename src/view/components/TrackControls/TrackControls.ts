@@ -9,6 +9,7 @@ import { AdsrParams, SoundData, TrackData } from "../../../music/types";
 import { Button } from "../Button/Button";
 import closeIcon from "./assets/close.svg";
 import { classNames as cn } from "../../../renderer/utils";
+import { CONFIG } from "../../../config";
 
 type Props = {
   track: TrackData;
@@ -68,8 +69,8 @@ export const TrackControls: Component<Props> = (
               props: {
                 type: "number",
                 value: track.bpm,
-                min: 1,
-                max: 1000,
+                min: CONFIG.MIN_BPM,
+                max: CONFIG.MAX_BPM,
                 disabled,
                 step: 1,
                 onChange: getTrackFieldHandler("bpm", Number),
@@ -138,7 +139,7 @@ export const TrackControls: Component<Props> = (
               type: "range",
               value: track.adsr.attackTime,
               min: 0,
-              max: 3,
+              max: CONFIG.MAX_ATTACK_TIME,
               step: 0.05,
               onChange: getAdsrFieldHandler("attackTime", Number),
             },
@@ -155,7 +156,7 @@ export const TrackControls: Component<Props> = (
               type: "range",
               value: track.adsr.decayTime,
               min: 0,
-              max: 3,
+              max: CONFIG.MAX_DECAY_TIME,
               step: 0.05,
               onChange: getAdsrFieldHandler("decayTime", Number),
             },
@@ -170,7 +171,7 @@ export const TrackControls: Component<Props> = (
               type: "range",
               value: track.adsr.sustainTime,
               min: 0,
-              max: 3,
+              max: CONFIG.MAX_SUSTAIN_TIME,
               step: 0.05,
               onChange: getAdsrFieldHandler("sustainTime", Number),
             },
@@ -205,7 +206,7 @@ export const TrackControls: Component<Props> = (
               value: track.adsr.releaseTime,
               min: 0,
               max: 1,
-              step: 0.05,
+              step: CONFIG.MAX_RELEASE_TIME,
               onChange: getAdsrFieldHandler("releaseTime", Number),
             },
             key: "adsr.releaseTime",
