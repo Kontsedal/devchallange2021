@@ -3,6 +3,9 @@ import { Track } from "music/Track";
 import { PLAY_STATE } from "../../constants";
 import { Button } from "../Button/Button";
 import s from "./MainControlPanel.module.scss";
+import playIcon from "./assets/play.svg";
+import pauseIcon from "./assets/pause.svg";
+import stopIcon from "./assets/stop.svg";
 
 type Props = {
   tracks: { id: string; instance: Track }[];
@@ -55,7 +58,11 @@ export const MainControlPanel: Component<Props> = (
         ${
           playState === PLAY_STATE.IDLE || playState === PLAY_STATE.PAUSED
             ? child(Button, {
-                props: { text: "Play", onClick: handlePlay },
+                props: {
+                  text: `<img alt="play" src="${playIcon}"/>`,
+                  onClick: handlePlay,
+                  className: s.playButton,
+                },
                 dependencies: [handlePlay],
                 key: "play",
               })
@@ -64,7 +71,11 @@ export const MainControlPanel: Component<Props> = (
         ${
           playState === PLAY_STATE.PLAYING
             ? child(Button, {
-                props: { text: "Pause", onClick: handlePause },
+                props: {
+                  text: `<img alt="pause" src="${pauseIcon}"/>`,
+                  onClick: handlePause,
+                  className: s.playButton,
+                },
                 dependencies: [],
                 key: "pause",
               })
@@ -73,7 +84,11 @@ export const MainControlPanel: Component<Props> = (
         ${
           playState === PLAY_STATE.PLAYING || playState === PLAY_STATE.PAUSED
             ? child(Button, {
-                props: { text: "Stop", onClick: handleStop },
+                props: {
+                  className: s.stopButton,
+                  text: `<img alt="stop" src="${stopIcon}"/>`,
+                  onClick: handleStop,
+                },
                 dependencies: [],
                 key: "stop",
               })

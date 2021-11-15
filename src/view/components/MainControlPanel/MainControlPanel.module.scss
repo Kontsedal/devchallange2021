@@ -1,2 +1,27 @@
 .controls {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.playButton {
+  z-index: 2;
+}
+.playButton,
+.stopButton {
+  width: 60px;
+  height: 60px;
+  border-radius: 60px;
+  border: 1px solid var(--grey-200);
+
+  &:hover {
+    background-color: var(--primary-100);
+    border: 1px solid var(--primary-200);
+  }
+}
+
+.stopButton {
+  position: relative;
+  transform: translateX(-30%);
+  z-index: 1;
 }

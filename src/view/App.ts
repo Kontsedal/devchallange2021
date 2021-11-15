@@ -20,7 +20,6 @@ export const App: Component<{}> = (_, { template, child, state, memo }) => {
     []
   );
   return template`<div class="${s.root}">
-    
     <div class="${s.container}">
       ${child(MainControlPanel, {
         props: {
@@ -41,7 +40,11 @@ export const App: Component<{}> = (_, { template, child, state, memo }) => {
         })}
       </div>
       ${child(Button, {
-        props: { onClick: addTrack, text: "Add a new track" },
+        props: {
+          onClick: addTrack,
+          text: "Add a new track",
+          className: s.addButton,
+        },
         key: "add-track",
         dependencies: [],
       })}

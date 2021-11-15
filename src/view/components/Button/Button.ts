@@ -3,10 +3,11 @@ import s from "./Button.module.scss";
 import { getId } from "utils/id";
 import { classNames as cn, domEvent } from "renderer/utils";
 
-export const Button: Component<{ text: string; onClick: () => unknown }> = (
-  { text, onClick },
-  { ref, effect }
-) => {
+export const Button: Component<{
+  text: string;
+  onClick: () => unknown;
+  className?: string;
+}> = ({ text, onClick, className }, { ref, effect, template }) => {
   const id = ref("js-button-" + getId());
 
   domEvent(effect, "click", "." + id.current, () => {
@@ -14,5 +15,9 @@ export const Button: Component<{ text: string; onClick: () => unknown }> = (
       onClick();
     }
   });
-  return `<button class="${cn(s.button, id.current)}">${text}</button>`;
+  return template`<button class="${cn(
+    s.button,
+    id.current,
+    className
+  )}">${text}</button>`;
 };
