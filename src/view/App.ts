@@ -63,10 +63,12 @@ export const App: Component<{}> = (_, { template, child, state, memo }) => {
         },
         key: "add-track",
       })}
-       <div>E4/4 E4/4 E4/4 D#4/8. A#4/16 E4/4 D#4/8. A#4/16 E4/2
+       <div class="${
+         s.example
+       }">E4/4 E4/4 E4/4 D#4/8. A#4/16 E4/4 D#4/8. A#4/16 E4/2
 D5/4 D5/4 D5/4 D#5/8. A#4/16 F#4/4 D#4/8. A#4/16 E4/2</div> 
 
-<div>D3/8 D3/8 A#3/8. A3/16 G3/8 G3/4.
+<div class="${s.example}">D3/8 D3/8 A#3/8. A3/16 G3/8 G3/4.
 A#3/8 A#3/8 C4/8 A#3/8 A3/4. A3/8
 A3/8 A3/8 A3/8 A3/8 D4/8 C4/8 A#3/8 A3/8
 A#3/4 A#3/8. A#3/16 D4/8 A#3/8</div>
