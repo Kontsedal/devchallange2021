@@ -151,15 +151,15 @@ export const parseSequence = (input: string) => {
   let entries = normalizedInput.split(" ");
   const PAUSE = "_";
   const knownValues = [...Object.keys(NOTE_FREQUENCY), PAUSE];
-  return entries.map((entry, index) => {
+  let errors: [number, string][] = [];
+  let result = entries.map((entry, index) => {
     let [note, duration] = entry.split("/");
     if (note) {
       note = note.toUpperCase();
     }
     if (!note || !knownValues.includes(note) || !/^\d+\.?$/.test(duration)) {
-      throw new Error(
-        `Invalid input. Cant recognize entry "${entry}" at index ${index}`
-      );
+      errors.push([index, entry]);
+      return;
     }
     const frequency =
       note === PAUSE
@@ -173,4 +173,13 @@ export const parseSequence = (input: string) => {
       },
     };
   });
+  if (errors.length) {
+    throw new Error(
+      errors.reduce(
+        (result, [index, entry]) => result + `(${entry})[${index}] `,
+        "Failed to parse. Invalid entries: "
+      )
+    );
+  }
+  return result;
 };
