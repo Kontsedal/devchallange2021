@@ -6,8 +6,8 @@ import s from "./MainControlPanel.module.scss";
 import playIcon from "./assets/play.svg";
 import pauseIcon from "./assets/pause.svg";
 import stopIcon from "./assets/stop.svg";
-import { TrackData } from "../../../music/types";
-import { formatTime } from "../../../utils/time";
+import { TrackData } from "music/types";
+import { Timer } from "./components/Timer/Timer";
 
 type Props = {
   tracks: { id: string; trackData: TrackData }[];
@@ -18,34 +18,25 @@ export const MainControlPanel: Component<Props> = (
   { playState, onChangePlayState, tracks },
   { memo, ref, template, child, state }
 ) => {
-  const audioContext = ref<AudioContext | undefined>(undefined);
+  const [audioContext, setAudioContext] = state<AudioContext | undefined>(
+    undefined
+  );
   const duration = memo(() => {
     return Math.max(
       0,
       ...tracks.map((track) => getTrackDuration(track.trackData))
     );
   }, [tracks]);
-  const [currentTime, setCurrentTime] = state(0);
   const timeInterval = ref(0);
   const handleStop = memo(
     () => () => {
       onChangePlayState(PLAY_STATE.IDLE);
       clearInterval(timeInterval.current);
-      setCurrentTime(0);
-      audioContext.current?.close();
-      audioContext.current = undefined;
+      audioContext?.close();
+      setAudioContext(undefined);
     },
     []
   );
-  const trackPlayTime = (context: AudioContext) => {
-    timeInterval.current = setInterval(() => {
-      setCurrentTime(context.currentTime);
-      if (context.currentTime >= duration) {
-        clearInterval(timeInterval.current);
-        handleStop();
-      }
-    }, 300);
-  };
   const handlePlay = memo(
     () => () => {
       const canPlay = tracks.some((track) => track.trackData.melody.length);
@@ -53,7 +44,7 @@ export const MainControlPanel: Component<Props> = (
         return;
       }
       if (playState === PLAY_STATE.PAUSED) {
-        audioContext.current?.resume();
+        audioContext?.resume();
       }
       if (playState === PLAY_STATE.IDLE) {
         const context = new AudioContext();
@@ -65,9 +56,8 @@ export const MainControlPanel: Component<Props> = (
             onChangePlayState(PLAY_STATE.PAUSED);
           }
         };
-        audioContext.current = context;
+        setAudioContext(context);
         tracks.forEach((track) => playTrack(track.trackData, context));
-        trackPlayTime(context);
       }
     },
     [tracks, playState]
@@ -75,7 +65,7 @@ export const MainControlPanel: Component<Props> = (
   const handlePause = memo(
     () => () => {
       onChangePlayState(PLAY_STATE.PAUSED);
-      audioContext.current?.suspend();
+      audioContext?.suspend();
     },
     []
   );
@@ -121,8 +111,10 @@ export const MainControlPanel: Component<Props> = (
             : ""
         }
       </div>
-      <div class="${s.duration}" >${formatTime(
-    playState === PLAY_STATE.IDLE ? 0 : currentTime
-  )} / ${formatTime(duration)}</div>
+      ${child(Timer, {
+        props: { duration, audioContext, onStop: handleStop },
+        key: "timer",
+      })}
+     </div>
 </div>`;
 };

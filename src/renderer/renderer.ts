@@ -1,3 +1,5 @@
+import { nextTick } from "../utils/function";
+
 const CACHE_KEYS = {
   CHILDREN: "children",
   DEPENDENCIES: "deps",
@@ -105,15 +107,17 @@ export const render = <T extends object>(
       return statesCache.get(id);
     }
     const setState = (value: T | ((oldValue: T) => T)) => {
-      let oldValue = statesCache.get(id);
-      let newValue: T;
-      if (typeof value === "function") {
-        newValue = (value as (oldValue: T) => T)(oldValue[0]);
-      } else {
-        newValue = value;
-      }
-      statesCache.set(id, [newValue, oldValue[1]]);
-      performRender(true, componentCache.get(CACHE_KEYS.PROPS));
+      nextTick(() => {
+        let oldValue = statesCache.get(id);
+        let newValue: T;
+        if (typeof value === "function") {
+          newValue = (value as (oldValue: T) => T)(oldValue[0]);
+        } else {
+          newValue = value;
+        }
+        statesCache.set(id, [newValue, oldValue[1]]);
+        performRender(true, componentCache.get(CACHE_KEYS.PROPS));
+      });
     };
     statesCache.set(id, [initialValue, setState]);
     return [initialValue, setState];
