@@ -145,13 +145,21 @@ export const NOTE_FREQUENCY = {
 
 export const parseSequence = (input: string) => {
   let normalizedInput = input.trim().replace(/\s+/gim, " ");
+  if (!normalizedInput) {
+    throw new Error("Input is empty");
+  }
   let entries = normalizedInput.split(" ");
   const PAUSE = "_";
   const knownValues = [...Object.keys(NOTE_FREQUENCY), PAUSE];
-  return entries.map((entry) => {
+  return entries.map((entry, index) => {
     let [note, duration] = entry.split("/");
+    if (note) {
+      note = note.toUpperCase();
+    }
     if (!note || !knownValues.includes(note) || !/^\d+\.?$/.test(duration)) {
-      throw new Error("Invalid input");
+      throw new Error(
+        `Invalid input. Cant recognize entry "${entry}" at index ${index}`
+      );
     }
     const frequency =
       note === PAUSE

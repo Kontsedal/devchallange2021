@@ -1,5 +1,3 @@
-import { throttle } from "../utils/throttle";
-
 const CACHE_KEYS = {
   CHILDREN: "children",
   DEPENDENCIES: "deps",
@@ -107,17 +105,15 @@ export const render = <T extends object>(
       return statesCache.get(id);
     }
     const setState = (value: T | ((oldValue: T) => T)) => {
-      setTimeout(() => {
-        let oldValue = statesCache.get(id);
-        let newValue: T;
-        if (typeof value === "function") {
-          newValue = (value as (oldValue: T) => T)(oldValue[0]);
-        } else {
-          newValue = value;
-        }
-        statesCache.set(id, [newValue, oldValue[1]]);
-        performRender(true, componentCache.get(CACHE_KEYS.PROPS));
-      }, 0);
+      let oldValue = statesCache.get(id);
+      let newValue: T;
+      if (typeof value === "function") {
+        newValue = (value as (oldValue: T) => T)(oldValue[0]);
+      } else {
+        newValue = value;
+      }
+      statesCache.set(id, [newValue, oldValue[1]]);
+      performRender(true, componentCache.get(CACHE_KEYS.PROPS));
     };
     statesCache.set(id, [initialValue, setState]);
     return [initialValue, setState];
@@ -178,7 +174,7 @@ export const render = <T extends object>(
     return document.querySelector(`[data-key="${parentKey}"]`) as HTMLElement;
   }
 
-  const performRender = throttle((isRerender: boolean, providedProps?: any) => {
+  const performRender = (isRerender: boolean, providedProps?: any) => {
     const currentProps = providedProps || props;
     let componentRef = getRootElement();
     componentCache.set(CACHE_KEYS.PROPS, currentProps);
@@ -214,7 +210,7 @@ export const render = <T extends object>(
     });
     renderedChildrenKeys = [];
     return result;
-  }, 16);
+  };
 
   return performRender(false);
 };

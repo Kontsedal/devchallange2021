@@ -22,15 +22,20 @@ export const TrackControls: Component<Props> = (
   { template, child, state, effect }
 ) => {
   const [trackString, setTrackString] = state("");
+  const [trackStringError, setTrackStringError] = state<string | undefined>(
+    undefined
+  );
   effect(() => {
     if (!trackString) {
+      setTrackStringError(undefined);
+      onTrackChange({ ...track, melody: [] });
       return;
     }
     try {
       let parsedMelody: SoundData[] = parseSequence(trackString);
       onTrackChange({ ...track, melody: parsedMelody });
-    } catch (error) {
-      alert("Failed to parse melody");
+    } catch (error: any) {
+      setTrackStringError(error.message);
     }
   }, [trackString]);
   const getTrackFieldHandler =
@@ -126,7 +131,7 @@ export const TrackControls: Component<Props> = (
           },
           key: "trackInput",
         })}
-        
+        <div class="${s.error}">${trackStringError}</div>
       </div>
       <div class="${s.side}">
       <div>
