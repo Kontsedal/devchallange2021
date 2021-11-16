@@ -32,7 +32,7 @@ export const TrackControls: Component<Props> = (
       return;
     }
     try {
-      let parsedMelody: SoundData[] = parseSequence(trackString);
+      let parsedMelody: SoundData[] = parseSequence(trackString) as SoundData[];
       onTrackChange({ ...track, melody: parsedMelody });
     } catch (error: any) {
       setTrackStringError(error.message);
@@ -90,9 +90,9 @@ export const TrackControls: Component<Props> = (
               props: {
                 disabled,
                 options: [
-                  { value: INSTRUMENT.BASIC, title: "Basic" },
                   { value: INSTRUMENT.ORGAN, title: "Organ" },
                   { value: INSTRUMENT.BASS, title: "Bass" },
+                  { value: INSTRUMENT.SMOOTH, title: "Smooth" },
                 ],
                 value: track.instrument,
                 onChange: getTrackFieldHandler(
