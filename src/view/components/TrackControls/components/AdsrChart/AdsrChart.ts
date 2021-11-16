@@ -37,13 +37,13 @@ export const AdsrChart: Component<{ track: TrackData }> = (
     [getX(track.adsr.attackTime), getY(track.volume)],
     [
       getX(track.adsr.attackTime + track.adsr.decayTime),
-      getY(track.adsr.sustainLevel),
+      getY(track.adsr.sustainLevel * track.volume),
     ],
     [
       getX(
         track.adsr.attackTime + track.adsr.decayTime + track.adsr.sustainTime
       ),
-      getY(track.adsr.sustainLevel),
+      getY(track.adsr.sustainLevel * track.volume),
     ],
     [
       getX(
