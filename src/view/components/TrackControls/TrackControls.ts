@@ -35,6 +35,7 @@ export const TrackControls: Component<Props> = (
     try {
       let parsedMelody: SoundData[] = parseSequence(trackString) as SoundData[];
       onTrackChange({ ...track, melody: parsedMelody });
+      setTrackStringError(undefined);
     } catch (error: any) {
       setTrackStringError(error.message);
     }

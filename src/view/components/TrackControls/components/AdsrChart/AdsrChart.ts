@@ -10,7 +10,6 @@ export const AdsrChart: Component<{ track: TrackData }> = (
 ) => {
   const [width, setWidth] = state(100);
   const chartId = ref("js-chart" + getId());
-  console.log(width);
   const height = 150;
   const totalTime =
     track.adsr.attackTime +
