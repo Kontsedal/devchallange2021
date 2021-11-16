@@ -106,9 +106,7 @@ export const TrackControls: Component<Props> = (
             })}
           </div>
           <div>
-            <p class="${cn(s.label, s.center)}">Volume ${(
-    track.volume * 100
-  ).toFixed(0)}%</p>
+            <p class="${cn(s.label, s.center)}">Volume ${(track.volume * 100).toFixed(0)}%</p>
             ${child(Input, {
               props: {
                 disabled,
@@ -139,9 +137,7 @@ export const TrackControls: Component<Props> = (
       </div>
       <div class="${s.side}">
       <div>
-          <p class="${s.label}">Attack time (${String(
-    track.adsr.attackTime
-  )}s):</p>
+          <p class="${s.label}">Attack time (${String(track.adsr.attackTime)}s):</p>
           ${child(Input, {
             props: {
               disabled,
@@ -156,9 +152,7 @@ export const TrackControls: Component<Props> = (
           })}
         </div>
         <div>
-          <p class="${s.label}">Decay time (${String(
-    track.adsr.decayTime
-  )}s):</p>
+          <p class="${s.label}">Decay time (${String(track.adsr.decayTime)}s):</p>
           ${child(Input, {
             props: {
               disabled,
@@ -188,9 +182,7 @@ export const TrackControls: Component<Props> = (
           })}
         </div>
         <div>
-          <p class="${s.label}">Sustain level (${(
-    track.adsr.sustainLevel * 100
-  ).toFixed(0)}%):</p>
+          <p class="${s.label}">Sustain level (${(track.adsr.sustainLevel * 100).toFixed(0)}%):</p>
           ${child(Input, {
             props: {
               disabled,
@@ -205,9 +197,7 @@ export const TrackControls: Component<Props> = (
           })}
         </div>
         <div>
-          <p class="${s.label}">Release time (${String(
-    track.adsr.releaseTime
-  )}s):</p>
+          <p class="${s.label}">Release time (${String(track.adsr.releaseTime)}s):</p>
           ${child(Input, {
             props: {
               disabled,

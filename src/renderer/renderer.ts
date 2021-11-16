@@ -193,6 +193,10 @@ export const render = <T extends object>(
     if (componentRef && isRerender) {
       componentRef.outerHTML = result;
     }
+
+    /**
+     * Cleanup after removed children(clear cache, run effect unsubscribe fn etc)
+     */
     const childrenCache = getSubCache(componentCache, CACHE_KEYS.CHILDREN);
     childrenCache.forEach((childCache: Map<any, any>, key) => {
       if (!renderedChildrenKeys.includes(key as string)) {
