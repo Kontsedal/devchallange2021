@@ -11,11 +11,17 @@ export const Button: Component<{
 }> = ({ text, onClick, disabled, className }, { ref, effect, template }) => {
   const id = ref("js-button-" + getId());
 
-  domEvent(effect, "click", "." + id.current, () => {
-    if (typeof onClick === "function") {
-      onClick();
-    }
-  });
+  domEvent(
+    effect,
+    "click",
+    "." + id.current,
+    () => {
+      if (typeof onClick === "function" && !disabled) {
+        onClick();
+      }
+    },
+    [disabled, onClick]
+  );
   return template`<button ${attributes({
     disabled,
     class: cn(s.button, id.current, className),

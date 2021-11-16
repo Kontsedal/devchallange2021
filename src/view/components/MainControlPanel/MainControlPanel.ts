@@ -50,7 +50,7 @@ export const MainControlPanel: Component<Props> = (
     () => () => {
       const canPlay = tracks.some((track) => track.trackData.melody.length);
       if (!canPlay) {
-        return alert("There is nothing to play");
+        return;
       }
       if (playState === PLAY_STATE.PAUSED) {
         audioContext.current?.resume();
@@ -89,6 +89,7 @@ export const MainControlPanel: Component<Props> = (
                 props: {
                   text: `<img alt="play" src="${playIcon}"/>`,
                   onClick: handlePlay,
+                  disabled: duration === 0,
                   className: s.playButton,
                 },
                 key: "play",

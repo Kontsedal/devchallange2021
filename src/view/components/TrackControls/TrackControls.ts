@@ -62,6 +62,7 @@ export const TrackControls: Component<Props> = (
         props: {
           onClick: onClose,
           className: s.close,
+          disabled,
           text: `<img alt="close" src="${closeIcon}"/>`,
         },
         key: "close",
