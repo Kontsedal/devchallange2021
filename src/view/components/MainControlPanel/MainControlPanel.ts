@@ -116,5 +116,5 @@ export const MainControlPanel: Component<Props> = (
         key: "timer",
       })}
      </div>
-</div>`;
+`;
 };
