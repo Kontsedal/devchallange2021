@@ -10,6 +10,7 @@ import { Button } from "../Button/Button";
 import closeIcon from "./assets/close.svg";
 import { classNames as cn } from "../../../renderer/utils";
 import { CONFIG } from "../../../config";
+import { AdsrChart } from "./components/AdsrChart/AdsrChart";
 
 type Props = {
   track: TrackData;
@@ -133,6 +134,7 @@ export const TrackControls: Component<Props> = (
           key: "trackInput",
         })}
         <div class="${s.error}">${trackStringError}</div>
+        ${child(AdsrChart, { props: { track }, key: "chart" })}
       </div>
       <div class="${s.side}">
       <div>
@@ -211,8 +213,8 @@ export const TrackControls: Component<Props> = (
               type: "range",
               value: track.adsr.releaseTime,
               min: 0,
-              max: 1,
-              step: CONFIG.MAX_RELEASE_TIME,
+              max: CONFIG.MAX_RELEASE_TIME,
+              step: 0.05,
               onChange: getAdsrFieldHandler("releaseTime", Number),
             },
             key: "adsr.releaseTime",

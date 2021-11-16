@@ -1,0 +1,35 @@
+.wrapper {
+  position: relative;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+.svg {
+  width: 100%;
+
+  path {
+    stroke: var(--primary-300);
+    stroke-width: 3;
+    fill: var(--primary-100);
+  }
+}
+
+.time {
+  position: absolute;
+  bottom: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.timeValue {
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+}
+
+.volume {
+  position: absolute;
+  left: -10px;
+  top: 50%;
+  transform: translateY(-50%) rotate(90deg);
+}
