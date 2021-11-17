@@ -1,17 +1,16 @@
 import { Component } from "renderer/renderer";
 import s from "./Select.module.scss";
 import { getId } from "utils/id";
-import { attributes as attr, classNames as cn, domEvent } from "renderer/utils";
+import { attributes as attr, classNames as cn } from "renderer/utils";
 
 export const Select: Component<{
   value: string | number;
   disabled: boolean;
   onChange: (newValue: string) => unknown;
   options: { value: string; title: string }[];
-}> = ({ value, disabled, onChange, options }, { ref, effect }) => {
+}> = ({ value, disabled, onChange, options }, { ref, event }) => {
   const id = ref("js-select-" + getId());
-  domEvent(
-    effect,
+  event(
     "change",
     "." + id.current,
     (event) => {

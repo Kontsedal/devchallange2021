@@ -4,7 +4,6 @@ import { getId } from "utils/id";
 import {
   attributes,
   classNames as cn,
-  domEvent,
 } from "../../../renderer/utils";
 
 export const Textarea: Component<{
@@ -16,11 +15,10 @@ export const Textarea: Component<{
   className?: string;
 }> = (
   { value, disabled, className, hasError, onChange, placeholder },
-  { ref, effect }
+  { ref, event }
 ) => {
   const id = ref("js-textarea-" + getId());
-  domEvent(
-    effect,
+  event(
     "change",
     "." + id.current,
     (event) => {

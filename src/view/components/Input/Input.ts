@@ -4,7 +4,6 @@ import { getId } from "utils/id";
 import {
   attributes,
   classNames as cn,
-  domEvent,
 } from "../../../renderer/utils";
 
 export const Input: Component<{
@@ -31,11 +30,10 @@ export const Input: Component<{
     step,
     type,
   },
-  { ref, effect }
+  { ref, event }
 ) => {
   const id = ref("js-input-" + getId());
-  domEvent(
-    effect,
+  event(
     "change",
     "." + id.current,
     (event) => {

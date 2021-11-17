@@ -34,6 +34,12 @@ export type ComponentUtils = {
   ) => [state: T, setState: (newValue: T | ((oldValue: T) => T)) => void];
   effect: (fn: () => (() => void) | void, dependencies: any[]) => void;
   memo: <T extends () => any>(fn: T, dependencies: any[]) => ReturnType<T>;
+  event: (
+    eventName: string,
+    selector: string,
+    handler: (event: Event) => unknown,
+    dependencies?: any[]
+  ) => void
 };
 const KEY_DELIMITER = "->";
 export type Component<T extends object> = (
@@ -164,6 +170,30 @@ export const render = <T extends object>(
   };
 
   /**
+   * Adds delegated DOM event listener to the provided selector
+   */
+   const event = (
+    eventName: string,
+    selector: string,
+    handler: (event: Event) => unknown,
+    dependencies: any[] = []
+  ) => {
+    effect(() => {
+      const delegatedHandler = (event: Event) => {
+        if (!event) {
+          return;
+        }
+        let expectedTarget = (event?.target as HTMLDivElement)?.closest(selector);
+        if (expectedTarget) {
+          handler(event);
+        }
+      };
+      document.body.addEventListener(eventName, delegatedHandler);
+      return () => document.body.removeEventListener(eventName, delegatedHandler);
+    }, dependencies);
+  };
+
+  /**
    * Should be used if component html string includes children functions or arrays
    * @example return template`<div>${child(Button, {props: {text:"test"}, key: 'btn'})}</div>`
    */
@@ -189,7 +219,7 @@ export const render = <T extends object>(
   };
 
   function getUtils(): ComponentUtils {
-    return { template, child, ref, state, effect, memo };
+    return { template, child, ref, state, effect, memo, event };
   }
 
   function getRootElement() {
