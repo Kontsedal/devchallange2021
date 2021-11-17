@@ -36,10 +36,13 @@ export const playTrack = (track: TrackData, audioContext: AudioContext) => {
         adsr: track.adsr,
       });
     }
-    lastEnd = lastEnd + duration;
+    lastEnd += duration;
   }
 };
 
+/**
+ * Returns a duration of a track including ADSR effects
+ */
 export const getTrackDuration = (track: TrackData) => {
   return track.melody.reduce((result, soundDataItem, index) => {
     let isLast = index === track.melody.length - 1;

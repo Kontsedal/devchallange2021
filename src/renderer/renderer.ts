@@ -1,3 +1,8 @@
+/**
+ * Util for a recursive rendering/rerendering of html strings
+ * Provides an API similar to the React's one
+ */
+
 import { nextTick } from "../utils/function";
 
 const CACHE_KEYS = {
@@ -51,6 +56,12 @@ export const render = <T extends object>(
 ) => {
   const componentCache = getSubCache(cache, parentKey);
   let renderedChildrenKeys: string[] = [];
+
+  /**
+   * Need to be called to nest one component into another
+   * Creates a dedicated cache for provided component
+   * for storing hooks data
+   */
   let child =
     <T extends object>(
       childComponent: Component<T>,
@@ -76,6 +87,7 @@ export const render = <T extends object>(
     refCache.set(id, result);
     return result;
   };
+
   let memo = <T extends () => any>(
     fn: T,
     dependencies: any[]
@@ -122,10 +134,11 @@ export const render = <T extends object>(
     statesCache.set(id, [initialValue, setState]);
     return [initialValue, setState];
   };
+
   let effect = (fn: () => (() => void) | void, dependencies: any[]) => {
     callCount++;
     const id = callCount;
-    setTimeout(() => {
+    nextTick(() => {
       const effectsCache = getSubCache(cache, CACHE_KEYS.EFFECTS);
       const effectCache = getSubCache(effectsCache, id);
       let prevDependencies = effectCache.get(CACHE_KEYS.PREV_DEPENDENCIES);
@@ -147,8 +160,13 @@ export const render = <T extends object>(
       let cleanup = fn();
       effectCache.set(CACHE_KEYS.CLEANUP_FUNCTION, cleanup);
       effectCache.set(CACHE_KEYS.PREV_DEPENDENCIES, dependencies);
-    }, 0);
+    });
   };
+
+  /**
+   * Should be used if component html string includes children functions or arrays
+   * @example return template`<div>${child(Button, {props: {text:"test"}, key: 'btn'})}</div>`
+   */
   let template = (
     input: TemplateStringsArray,
     ...params: ReadonlyArray<any>

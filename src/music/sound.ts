@@ -17,12 +17,15 @@ export const playSound = ({
   instrument: Instrument;
 }) => {
   const oscillator = audioContext.createOscillator();
-  instrument(audioContext, oscillator);
   const gain = audioContext.createGain();
-
+  instrument(audioContext, oscillator);
   oscillator.connect(gain);
   gain.connect(audioContext.destination);
   oscillator.frequency.value = freqValue;
+
+  /**
+   * Apply ADSR
+   */
   gain.gain.setValueAtTime(0.001, startTime);
   gain.gain.exponentialRampToValueAtTime(volume, startTime + adsr.attackTime);
   gain.gain.exponentialRampToValueAtTime(

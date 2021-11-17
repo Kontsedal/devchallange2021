@@ -143,6 +143,9 @@ export const NOTE_FREQUENCY = {
   Eb8: 4978.03,
 };
 
+/**
+ * Converts music string to SoundData array
+ */
 export const parseSequence = (input: string) => {
   let normalizedInput = input.trim().replace(/\s+/gim, " ");
   if (!normalizedInput) {

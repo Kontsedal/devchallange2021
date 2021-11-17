@@ -3,6 +3,9 @@ import { ComponentUtils } from "./renderer";
 export const classNames = (...classes: Array<string | boolean | undefined>) =>
   classes.filter(Boolean).join(" ");
 
+/**
+ * Adds delegated DOM event listener to the provided selector
+ */
 export const domEvent = (
   effect: ComponentUtils["effect"],
   eventName: string,
@@ -25,6 +28,10 @@ export const domEvent = (
   }, [handler, ...dependencies]);
 };
 
+/**
+ * Converts attributes object to a valid attributes string
+ * @example attributes({disabled: true, value: 1}) ==> "disabled value='1'"
+ */
 export const attributes = (
   attributes: Record<string, string | number | boolean | undefined>
 ) =>
